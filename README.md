@@ -9,6 +9,9 @@ Plugin Example do nothing but if you want to create a new plugin you can use it 
 
 
 After that, you need to go to mainConfig.json and add the name of your folder plugin (PluginExample in this case) to the list tools_available
+
+
+
 // GitHub
 
 To sychronize your SousLeSensVocables project to the plugins, you need to do the following commands:
