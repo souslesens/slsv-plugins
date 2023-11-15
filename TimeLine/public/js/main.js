@@ -93,12 +93,12 @@ var TimeLine = (function () {
                         visjsData.edges.forEach(function (item, index) {
                             
                             if( listIds.includes(item.to)){
-                                //self.datesTypes[item.to].linkedBO.push(item.from);
+                                self.datesTypes.filter((dateType)=>dateType.id==item.to)[0].linkedBO.push(item.from);
                                 linkedObjects.push({id:item.from , label : visjsData.nodes.filter((word) => word.id==item.from)[0].label});
                             }
 
                             if( listIds.includes(item.from)){
-                                //self.datesTypes[item.from].linkedBO.push(item.to);
+                                self.datesTypes.filter((dateType)=>dateType.id==item.from)[0].linkedBO.push(item.to);
                                 linkedObjects.push({id:item.to , label: visjsData.nodes.filter((word) => word.id==item.to)[0].label });
                             }
 
@@ -141,6 +141,12 @@ var TimeLine = (function () {
             alert("Start Date required");
             return;
         }
+        var bo={id:$("#BO").val(),label:$("#BO option:selected").text()};
+        
+        var datesTypes_corresponding=self.datesTypes.filter(dataType=>dataType.linkedBO.includes(bo.id)&&dataType.id!=startDateURI);
+        
+        
+        common.fillSelectOptions('EndDates',datesTypes_corresponding,true,"label","id");    
         $("#AggregationDiv").load("/plugins/TimeLine/html/selectAggregation.html",function () { 
             // Fill GROUP BY and AXIS Y
             // To group By get BO selected then get all nodes with transitivity in inferred model trough it except himself and already items in bo div and fill them in select div 
@@ -154,9 +160,12 @@ var TimeLine = (function () {
     }
     self.BOSelected=function(){
         $('#DatesDiv').load("/plugins/TimeLine/html/selectDates.html",function () { 
-            common.fillSelectOptions('StartDates',self.datesTypes,true,"label","id");
+
+            var bo={id:$("#BO").val(),label:$("#BO option:selected").text()};
+            var datesTypes_corresponding=self.datesTypes.filter(dataType=>dataType.linkedBO.includes(bo.id));
+            common.fillSelectOptions('StartDates',datesTypes_corresponding,true,"label","id");
             
-            common.fillSelectOptions('EndDates',self.datesTypes,true,"label","id");       
+            //common.fillSelectOptions('EndDates',self.datesTypes,true,"label","id");       
         });
         
     };
@@ -391,6 +400,22 @@ var TimeLine = (function () {
                         callbackSeries();
                     });
                 },
+                // To suppress after : hard display of jc
+                function (callbackSeries) {
+                    var fromNode=bo;
+                    var toNode={};
+                    toNode.id="http://data.total/resource/tsf/dalia-lifex/Job_Card"
+                  
+                    
+                    self.shortestPathFromVicinityArray( fromNode.id, toNode.id,vicinityArray, function (err, result) {
+                        if (err) {
+                            callbackSeries(err);
+                            return;
+                        }
+                        elements.push({fromNode:fromNode,fromNodeDivId:"",paths:result,toNode:toNode,toNodeDivId:""});
+                        callbackSeries();
+                    });
+                },
             
                 
             ],
@@ -427,6 +452,7 @@ var TimeLine = (function () {
                         var id = index;
                         var axisYData = item[self.transformVariableNameForQueryKG(axisY.label)+'Value']!=undefined ? item[self.transformVariableNameForQueryKG(axisY.label+'Value')].value : 20;
                         var groupByData = item[self.transformVariableNameForQueryKG(groupBy.label)].value ;
+                        var groupByDataLabel = item[self.transformVariableNameForQueryKG(groupBy.label)+'Label'].value ;
                         var strVariableBoLabel=self.transformVariableNameForQueryKG(bo.label)+'Label';
                         if(item[strVariableBoLabel]){
                             var boDataLabel = item[strVariableBoLabel].value;
@@ -437,13 +463,18 @@ var TimeLine = (function () {
                             return;
                         }
                         var _startDate = new Date(item[self.transformVariableNameForQueryKG(startDate.label)+'Value'].value.substring(0, 10));
+                       
+                        var _endDate = (endDate.label!=''&& item[self.transformVariableNameForQueryKG(endDate.label)+'Value']!=undefined) ? new Date(item[self.transformVariableNameForQueryKG(endDate.label)+'Value'].value.substring(0, 10)) : null;
+                        var colorData= item[self.transformVariableNameForQueryKG(color.label)] ? item[self.transformVariableNameForQueryKG(color.label)].value : 'red';
                         
-                        var _endDate = endDate.label!='' ? new Date(item[self.transformVariableNameForQueryKG(endDate.label)+'Value'].value.substring(0, 10)) : null;
-                        var colorData= item[self.transformVariableNameForQueryKG(color.label)].value;
+
+                       
+                       
+                       
                         timeBounds.start = timeBounds.start < _startDate ? _startDate : timeBounds.start;
                         timeBounds.end = timeBounds.end > _endDate ? _endDate : timeBounds.end;
     
-                        var groupKey = groupByData;
+                        var groupKey = groupByDataLabel;
                         if (!groups[groupKey]) {
                             groups[groupKey] = [];
                         }
@@ -457,7 +488,7 @@ var TimeLine = (function () {
                         var boData_info=self.transformVariableNameForQueryKG(bo.label);
                         var boDataLabel_info=strVariableBoLabel;
                         var groupBy_info=self.transformVariableNameForQueryKG(groupBy.label);
-                        
+                        var color_info=self.transformVariableNameForQueryKG(color.label);
                         var data={};
                         if(self.transformVariableNameForQueryKG(axisY.label)!=''){
                             data[self.transformVariableNameForQueryKG(axisY.label)+'Value']=item[self.transformVariableNameForQueryKG(axisY.label)+'Value']!=undefined ? item[self.transformVariableNameForQueryKG(axisY.label+'Value')].value : 'default';
@@ -467,15 +498,26 @@ var TimeLine = (function () {
                         if(boDataLabel!=undefined){
                             data[boDataLabel_info]= boDataLabel ;
                         }
-                        
+                        if(colorData!='red'){
+                            data[color_info]= colorData ;
+                        }
                         data[groupBy_info]=groupByData;
+                        // To suppress after : hard display of jc
 
+                        data['JobCard']=item.Job_Card.value
+                        data['JobCardLabel']=item.Job_CardLabel.value
+                        // rescaling 
+                        
+                        axisYData=+axisYData+15;
+                        axisYData=axisYData.toString();
+                        
                         groups[groupKey].push({
                             id: "period_" + id,
                             // type: "box",
                             group: groupKey,
                             // content: axisYData,
-                            title: boDataLabel!=undefined ?  boDataLabel + " POB" + axisYData :'',
+                            //title: boDataLabel!=undefined ?  boDataLabel  : boData,
+                            title: item.Job_CardLabel.value,
                             editable:true,
                             start: _startDate,
                             end: _endDate,
@@ -519,8 +561,8 @@ var TimeLine = (function () {
                     var options = {
                         min: timeBounds.start, // lower limit of visible range
                         max: timeBounds.end,
-                        height:"950px",
-                        maxHeight: "950px",
+                        height:"850px",
+                        maxHeight: "850px",
                         margin: { item: { vertical: 1 } },
                         verticalScroll :true,
                         //  clickToUse:true,
@@ -560,6 +602,7 @@ var TimeLine = (function () {
                             $("#timeLineWidget_messageDiv").html(html);
                         } else {
                             self.currrentTimelineItem = null;
+                            $("#timeLineWidget_messageDiv").html('No item selected')
                         }
                     });
 
@@ -591,6 +634,12 @@ var TimeLine = (function () {
     self.showInfos=function(){
        // get all item infos from Query KG and display it on a NodeInfo
        // We can also have node info of Business Object
+        var bo={id:$("#BO").val(),label:$("#BO option:selected").text()};
+        //var object_to_displayURI=self.currrentTimelineItem.data[bo.label];
+        var object_to_displayURI=self.currrentTimelineItem.data['JobCard'];
+        // To suppress after : hard display of jc
+        NodeInfosWidget.showNodeInfos(self.source, object_to_displayURI, "mainDialogDiv", { hideModifyButtons: true });
+        
     };
     self.filter=function(){
 

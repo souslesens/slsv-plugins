@@ -1,29 +1,44 @@
+
+
+
 <body>
     <div id="controlAggregationPannel" >
-            </br></br></br>
-            Axis Y
-            <select id="axisYDiv" style="width:350px;" > 
-                <option value="">Dates  available</option>
-            </select>
-            <button id="filter_axisYDiv" onclick="TimeLine.filter('axisYDiv')"> Filter </button>
-            </br></br>
-            Group BY
-            <select id="groupByDiv" style="width:350px;" > 
-                <option value="">Dates  available</option>
-            </select>
-            <button id="filter_groupByDiv" onclick="TimeLine.filter('groupByDiv')"> Filter </button>
+           
+            <span class="TimeLine_title">
+                
+                Axis Y
+            </span>
+                <select id="axisYDiv" style="width:350px;" > 
+                    <option value="">Dates  available</option>
+                </select>
+                <button id="filter_axisYDiv" onclick="TimeLine.filter('axisYDiv')"> Filter </button>
+                <br />
+                
+                <span class="TimeLine_title">
+                
+                    Group BY
+                </span>
+                <select id="groupByDiv" style="width:350px;" > 
+                    <option value="">Dates  available</option>
+                </select>
+                <button id="filter_groupByDiv" onclick="TimeLine.filter('groupByDiv')"> Filter </button>
+                <br />
+                 
+    
             
-             
-
-        </br></br>
-            Color
-        <select id="ColorDiv" style="width:350px;"> 
-            <option value="">Color</option>
-        </select>
-        <button id="filter_ColorDiv" onclick="TimeLine.filter('ColorDiv')"> Filter </button>
-        </br></br></br>
-
-        <button id="drawingTimeLine" onclick="TimeLine.drawTimeLine()"> Draw </button>
+            <span class="TimeLine_title">
+                Color
+            </span>
+            <select id="ColorDiv" style="width:350px;"> 
+                <option value="">Color</option>
+            </select>
+            <button id="filter_ColorDiv" onclick="TimeLine.filter('ColorDiv')"> Filter </button>
+            <br /><br /><br />
+           
+    
+            <button id="drawingTimeLine" onclick="TimeLine.drawTimeLine()"> Draw </button>
+                  
+            
             
 
           
@@ -34,3 +49,5 @@
 
 
 </body>
+
+

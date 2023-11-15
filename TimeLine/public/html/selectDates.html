@@ -1,21 +1,36 @@
 <body>
     <div id="controlDatesPannel" >
             </br></br></br>
-            Start Dates
+            <span class="TimeLine_title">
+                Start Dates
+            </span>
+            
             <select id="StartDates" style="width:350px;" onchange="TimeLine.dateSelected()"> 
                 <option value="">Dates  available</option>
             </select>
-            TimeLine > Filter value
+            <span class="TimeLine_describe">
+            
+                TimeLine > Filter value
+            </span>
+            
             <button id="filter_StartDates" onclick="TimeLine.filter('StartDates')"> Filter </button>
-
-            </br></br>
-            End Dates
+            <br />
+            
+            <span class="TimeLine_title">
+            
+                End Dates
+            </span>
+            
             <select id="EndDates" style="width:350px;" > 
                 <option value="">Dates  available</option>
             </select>
-            TimeLine < Filter value
+            <span class="TimeLine_describe">
+           
+                TimeLine < Filter value
+            </span>
+            
             <button id="filter_EndDates" onclick="TimeLine.filter('EndDates')"> Filter </button>
-            </br></br></br>
+            <br />
              
             <div id="AggregationDiv"></div>
 
