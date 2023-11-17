@@ -1,36 +1,41 @@
 <body>
     <div id="controlDatesPannel" >
-            </br></br></br>
-            <span class="TimeLine_title">
-                Start Dates
-            </span>
             
-            <select id="StartDates" style="width:350px;" onchange="TimeLine.dateSelected()"> 
-                <option value="">Dates  available</option>
-            </select>
-            <span class="TimeLine_describe">
+         
+            <div id="StartDatesEncapsulation" class="settingDiv">
+                <span class="TimeLine_title">
+                    Start Dates (required)
+                </span>
+                <select id="StartDates" style="width:350px;" onchange="TimeLine.dateSelected()"> 
+                    <option value="">Dates  available</option>
+                </select>
+                <span class="TimeLine_describe">
+                
+                    
+                </span>
+                
+                <button id="filter_StartDates" onclick="TimeLine.filter('StartDates')"> Filter </button>
+                <span id="filterMessage_StartDates" class="filterMessage"> </span>
+            </div >
+               
+            <div id="EndDatesEncapsulation" class="settingDiv">
+                <span class="TimeLine_title">
+                
+                    End Dates
+                </span>
+                
+                <select id="EndDates" style="width:350px;" > 
+                    <option value="">Dates  available</option>
+                </select>
+                <span class="TimeLine_describe">
             
-                TimeLine > Filter value
-            </span>
+                   
+                </span>
+                
+                <button id="filter_EndDates" onclick="TimeLine.filter('EndDates')"> Filter </button>
+                <span id="filterMessage_EndDates" class="filterMessage"> </span>
+            </div>
             
-            <button id="filter_StartDates" onclick="TimeLine.filter('StartDates')"> Filter </button>
-            <br />
-            
-            <span class="TimeLine_title">
-            
-                End Dates
-            </span>
-            
-            <select id="EndDates" style="width:350px;" > 
-                <option value="">Dates  available</option>
-            </select>
-            <span class="TimeLine_describe">
-           
-                TimeLine < Filter value
-            </span>
-            
-            <button id="filter_EndDates" onclick="TimeLine.filter('EndDates')"> Filter </button>
-            <br />
              
             <div id="AggregationDiv"></div>
 

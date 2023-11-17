@@ -4,16 +4,22 @@
 <body>
     <div id="controlAggregationPannel" >
            
-            <span class="TimeLine_title">
+          
+
+
+            <div id="axisYEncapsulation" class="settingDiv">
+                <span class="TimeLine_title">
                 
-                Axis Y
-            </span>
+                    Axis Y
+                </span>
                 <select id="axisYDiv" style="width:350px;" > 
                     <option value="">Dates  available</option>
                 </select>
                 <button id="filter_axisYDiv" onclick="TimeLine.filter('axisYDiv')"> Filter </button>
-                <br />
-                
+                <span id="filterMessage_axisYDiv" class="filterMessage"> </span>
+            </div>
+
+            <div id="groupByEncapsulation" class="settingDiv">
                 <span class="TimeLine_title">
                 
                     Group BY
@@ -22,20 +28,24 @@
                     <option value="">Dates  available</option>
                 </select>
                 <button id="filter_groupByDiv" onclick="TimeLine.filter('groupByDiv')"> Filter </button>
-                <br />
-                 
-    
-            
-            <span class="TimeLine_title">
-                Color
-            </span>
-            <select id="ColorDiv" style="width:350px;"> 
-                <option value="">Color</option>
-            </select>
-            <button id="filter_ColorDiv" onclick="TimeLine.filter('ColorDiv')"> Filter </button>
-            <br /><br /><br />
-           
-    
+                <span id="filterMessage_groupByDiv" class="filterMessage"> </span>
+
+            </div>
+
+            <div id="ColorEncapsulation" class="settingDiv">
+                <span class="TimeLine_title">
+                    Color
+                </span>
+                <select id="ColorDiv" style="width:350px;"> 
+                    <option value="">Color</option>
+                </select>
+                <button id="filter_ColorDiv" onclick="TimeLine.filter('ColorDiv')"> Filter </button>
+                <span id="filterMessage_ColorDiv" class="filterMessage"> </span>
+               
+
+            </div>
+               
+
             <button id="drawingTimeLine" onclick="TimeLine.drawTimeLine()"> Draw </button>
                   
             

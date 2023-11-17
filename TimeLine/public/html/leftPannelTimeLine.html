@@ -12,23 +12,38 @@
     .TimeLine_describe{
         font-size: 13px;
     }
+
+    .settingDiv{
+        margin:5px;
+        border: solid;
+        border-color: black;
+        margin-top: 15 px;
+    }
+    .filterMessage{
+        color : green;
+    }
 </style>
 
 <body>
     <div id="controlAxisPannel" >
            
             <button onclick="TimeLine.timelineSourceBrowser();"  >Change Source</button>
-            <br />
-            <span class="TimeLine_title">
-                
-                Select Business Object
-            </span>
-                
             
-            <select id="BO" style="width:350px;" onchange="TimeLine.BOSelected();"> 
-                <option value="" ></option>
-            </select>
-            <button id="filter_BO" onclick="TimeLine.filter('BO')"> Filter </button>
+            <div id="BOEncapsulation" class="settingDiv">
+                <span class="TimeLine_title">
+                
+                    Business Object (required)
+                </span>
+                    
+                
+                <select id="BO" style="width:350px;" onchange="TimeLine.BOSelected();"> 
+                    <option value="" ></option>
+                </select>
+                <button id="filter_BO" onclick="TimeLine.filter('BO')"> Filter </button>
+                <span id="filterMessage_BO" class="filterMessage"> </span>
+
+            </div>
+           
 
            <div id="DatesDiv"></div>    
             

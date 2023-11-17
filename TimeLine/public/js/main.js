@@ -8,6 +8,7 @@ var TimeLine = (function () {
     self.datesTypes=null;
     self.inferredModel=null;
     self.timeline=null;
+    self.filters={}
     self.onLoaded = function () {
         
     
@@ -24,7 +25,7 @@ var TimeLine = (function () {
         var selectTreeNodeFn = function () {
             $("#mainDialogDiv").dialog("close");
             TimeLine.source = SourceSelectorWidget.getSelectedSource()[0];
-
+            Lineage_sources.activeSource=TimeLine.source;
             $('#graphDiv').load("/plugins/TimeLine/html/TimeLineDiv.html",function () { 
                 
             });
@@ -426,7 +427,7 @@ var TimeLine = (function () {
                 }   
                 //QUERY KG
                 KGqueryWidget.querySets.sets=[];
-                KGqueryWidget.querySets.sets.push({elements:elements,color:'green',booleanOperator:null,classFiltersMap:{}});
+                KGqueryWidget.querySets.sets.push({elements:elements,color:'green',booleanOperator:null,classFiltersMap:self.filters});
                 KGqueryWidget.source=TimeLine.source;
                 
                 KGqueryWidget.execPathQuery(null,function(err,result){
@@ -451,8 +452,8 @@ var TimeLine = (function () {
                     result.results.bindings.forEach(function (item, index) {
                         var id = index;
                         var axisYData = item[self.transformVariableNameForQueryKG(axisY.label)+'Value']!=undefined ? item[self.transformVariableNameForQueryKG(axisY.label+'Value')].value : 20;
-                        var groupByData = item[self.transformVariableNameForQueryKG(groupBy.label)].value ;
-                        var groupByDataLabel = item[self.transformVariableNameForQueryKG(groupBy.label)+'Label'].value ;
+                        var groupByData = item[self.transformVariableNameForQueryKG(groupBy.label)]!=undefined ? item[self.transformVariableNameForQueryKG(groupBy.label)].value :null ;
+                        var groupByDataLabel =item[self.transformVariableNameForQueryKG(groupBy.label)+'Label']!=undefined ? item[self.transformVariableNameForQueryKG(groupBy.label)+'Label'].value : '';
                         var strVariableBoLabel=self.transformVariableNameForQueryKG(bo.label)+'Label';
                         if(item[strVariableBoLabel]){
                             var boDataLabel = item[strVariableBoLabel].value;
@@ -473,11 +474,14 @@ var TimeLine = (function () {
                        
                         timeBounds.start = timeBounds.start < _startDate ? _startDate : timeBounds.start;
                         timeBounds.end = timeBounds.end > _endDate ? _endDate : timeBounds.end;
-    
+                        
                         var groupKey = groupByDataLabel;
+                        
                         if (!groups[groupKey]) {
-                            groups[groupKey] = [];
+                                groups[groupKey] = [];
                         }
+                        
+                       
                         // replace by color gradient from most represented color to less
                         if(!colors[colorData]){
                             colors[colorData]="#"+Math.floor(Math.random()*16777215).toString(16);
@@ -641,8 +645,35 @@ var TimeLine = (function () {
         NodeInfosWidget.showNodeInfos(self.source, object_to_displayURI, "mainDialogDiv", { hideModifyButtons: true });
         
     };
-    self.filter=function(){
+    self.deleteFilter=function(inputname){
+        delete self.filters[$("#"+inputname).val()];
+        $("#filterMessage_" + inputname).html('');
+    }
+    self.filter=function(inputname){
 
+        console.log(inputname);
+        var filter_variable={id:$("#"+inputname).val(),label:$("#"+inputname+" option:selected").text()};
+        var datatype=null;
+        if(inputname=="StartDates"||inputname=="EndDates"){
+            datatype="http://www.w3.org/2001/XMLSchema#dateTime";
+        }
+        if(inputname=="axisYDiv"){
+            datatype="http://www.w3.org/2001/XMLSchema#integer";
+        }
+
+        IndividualValueFilterWidget.showDialog(null,[KGqueryWidget.getVarName(filter_variable).slice(1,KGqueryWidget.getVarName(filter_variable).length)] , filter_variable.id, datatype, function (err, filter) {
+            if (err) {
+                return alert(err);
+            }
+            if (!filter) {
+                return;
+            }
+
+            self.filters[filter_variable.id]={filter:filter,class:filter_variable};
+            
+            $("#filterMessage_" + inputname).html(`Filter completed <button  onclick="TimeLine.deleteFilter('${inputname}')"> Delete Filter </button>`);
+        });
+       
     };
 
     return self;
