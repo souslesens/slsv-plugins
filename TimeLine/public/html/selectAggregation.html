@@ -12,7 +12,7 @@
                 
                     Axis Y
                 </span>
-                <select id="axisYDiv" style="width:350px;" > 
+                <select id="axisYDiv" style="width:350px;" onchange="TimeLine.deleteFilter('axisYDiv');"> 
                     <option value="">Dates  available</option>
                 </select>
                 <button id="filter_axisYDiv" onclick="TimeLine.filter('axisYDiv')"> Filter </button>
@@ -24,7 +24,7 @@
                 
                     Group BY
                 </span>
-                <select id="groupByDiv" style="width:350px;" > 
+                <select id="groupByDiv" style="width:350px;" onchange="TimeLine.deleteFilter('groupByDiv');" > 
                     <option value="">Dates  available</option>
                 </select>
                 <button id="filter_groupByDiv" onclick="TimeLine.filter('groupByDiv')"> Filter </button>
@@ -36,7 +36,7 @@
                 <span class="TimeLine_title">
                     Color
                 </span>
-                <select id="ColorDiv" style="width:350px;"> 
+                <select id="ColorDiv" style="width:350px;" onchange="TimeLine.deleteFilter('ColorDiv');"> 
                     <option value="">Color</option>
                 </select>
                 <button id="filter_ColorDiv" onclick="TimeLine.filter('ColorDiv')"> Filter </button>

@@ -187,7 +187,7 @@ var TimeLine = (function () {
     }
     self.dateSelected=function(){
         // verify the correct filling
-
+        TimeLine.deleteFilter('StartDates');
         var startDateURI=$("#StartDates").val();
         var endDateURI=$("#EndDates").val();
         if(startDateURI==""){
@@ -212,6 +212,7 @@ var TimeLine = (function () {
 
     }
     self.BOSelected=function(){
+        TimeLine.deleteFilter('BO');
         $('#DatesDiv').load("/plugins/TimeLine/html/selectDates.html",function () { 
 
             var bo={id:$("#BO").val(),label:$("#BO option:selected").text()};
@@ -718,7 +719,7 @@ var TimeLine = (function () {
             datatype="http://www.w3.org/2001/XMLSchema#integer";
         }
 
-        IndividualValueFilterWidget.showDialog(null,[KGqueryWidget.getVarName(filter_variable).slice(1,KGqueryWidget.getVarName(filter_variable).length)] , filter_variable.id, datatype, function (err, filter) {
+        IndividualValueFilterWidget.showDialog(null,self.source,[KGquery.getVarName(filter_variable).slice(1,KGquery.getVarName(filter_variable).length)] , filter_variable.id, datatype, function (err, filter) {
             if (err) {
                 return alert(err);
             }
