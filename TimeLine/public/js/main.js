@@ -502,6 +502,10 @@ var TimeLine = (function () {
                     */
                     var startDate={id:$("#StartDates").val(),label:$("#StartDates option:selected").text()};
                     var endDate={id:$("#EndDates").val(),label:$("#EndDates option:selected").text()};
+                    if(result.results.bindings.length>1000){
+                        alert("limited to 1000 items, only the first 1000 items will be displayed");
+                        result.results.bindings=result.results.bindings.slice(0,1000);
+                    }
                     result.results.bindings.forEach(function (item, index) {
                         var id = index;
                         var axisYData = item[self.transformVariableNameForQueryKG(axisY.label)+'Value']!=undefined ? item[self.transformVariableNameForQueryKG(axisY.label+'Value')].value : 20;
