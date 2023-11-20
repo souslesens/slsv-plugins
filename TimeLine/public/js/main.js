@@ -1,5 +1,5 @@
 
-
+import VisjsGraphClass from "../../../vocables/modules/graph/VisjsGraphClass.js";
 
 
 var TimeLine = (function () {
@@ -42,20 +42,68 @@ var TimeLine = (function () {
     self.getDatesTypes=function(callback){
 
         var sourceGraphUri=Config.sources[TimeLine.source].graphUri; 
+        
+        var fromStr="FROM <"+sourceGraphUri+">";
+        var imports=Config.sources[TimeLine.source].imports
+        if (imports.length>0){
+            var unionQueries=`
+            {
+                SELECT distinct(?type) ?label ${fromStr} WHERE{
+                  ?sub ?pred ?obj .
+                  ?sub rdf:type ?type.
+                  ?type rdfs:label ?label.
+                  
+                  filter(datatype(?obj) = xsd:dateTime).
+                  filter(?type not in (owl:NamedIndividual)).
+                    filter(?pred != <http://purl.org/dc/terms/created>).
+      
+                  } 
+            }
+            `;
 
-        var query =`
-        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-        SELECT distinct(?type) ?label FROM <${sourceGraphUri}> WHERE  {
-            ?sub ?pred ?obj .
-            ?sub rdf:type ?type.
-            ?type rdfs:label ?label.
-            filter(?pred != <http://purl.org/dc/terms/created>)
-            filter(datatype(?obj) = xsd:dateTime).
-            filter(?type not in (owl:NamedIndividual)).
-        }limit 100
-        `
+            imports.forEach(function (item) {
+                fromStr=" FROM <"+Config.sources[item].graphUri+">";
+                var miniQuery= `{
+                    SELECT distinct(?type) ?label ${fromStr} WHERE{
+                      ?sub ?pred ?obj .
+                      ?sub rdf:type ?type.
+                      ?type rdfs:label ?label.
+                      
+                      filter(datatype(?obj) = xsd:dateTime).
+                      filter(?type not in (owl:NamedIndividual)).
+                        filter(?pred != <http://purl.org/dc/terms/created>).
+          
+                      } 
+                }`;
+                unionQueries+="UNION "+miniQuery;
+
+            });
+            
+            var query=`PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT *    WHERE  {
+                ${unionQueries}
+
+            }limit 100    `
+            
+        }
+        else{
+            var query =`
+            PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+            PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            SELECT distinct(?type) ?label FROM <${sourceGraphUri}> WHERE  {
+                ?sub ?pred ?obj .
+                ?sub rdf:type ?type.
+                ?type rdfs:label ?label.
+                filter(datatype(?obj) = xsd:dateTime).
+                 filter(?type not in (owl:NamedIndividual)).
+                filter(?pred != <http://purl.org/dc/terms/created>)
+            }limit 100
+            `
+        }
+       
 
 
 
@@ -63,7 +111,7 @@ var TimeLine = (function () {
 
     Sparql_proxy.querySPARQL_GET_proxy(url, query, "", { source: TimeLine.source }, function (err, result) {
         if (err) {
-            return callback(err);
+            return err;
         }
         if(callback){
             callback();
@@ -83,12 +131,16 @@ var TimeLine = (function () {
                 function (callbackSeries) {
                    
                     //  var _options = { withoutImports: Lineage_sources.activeSource || false };
-                    KGqueryWidget.getInferredModelVisjsData(TimeLine.source, function (err, visjsData) {
+                    KGquery_graph.KGqueryGraph = new VisjsGraphClass("KGquery_graphDiv", { nodes: [], edges: [] }, KGquery_graph.visjsOptions);
+                    var visjsGraphFileName = TimeLine.source + "_KGmodelGraph.json";
+                    KGquery_graph.KGqueryGraph.loadGraph(visjsGraphFileName, null, function (err, result) {
                         if (err) {
-                            callbackSeries();
-                            return alert(err.responseText);
-                            
+                            return callbackSeries("notFound");
                         }
+                        var visjsData = result;
+                       
+                    
+                        
                         self.inferredModel=visjsData;
                         var linkedObjects=[];
                         visjsData.edges.forEach(function (item, index) {
@@ -426,11 +478,12 @@ var TimeLine = (function () {
                 
                 }   
                 //QUERY KG
-                KGqueryWidget.querySets.sets=[];
-                KGqueryWidget.querySets.sets.push({elements:elements,color:'green',booleanOperator:null,classFiltersMap:self.filters});
-                KGqueryWidget.source=TimeLine.source;
+                KGquery.querySets.sets=[];
+                KGquery.querySets.sets.push({elements:elements,color:'green',booleanOperator:null,classFiltersMap:self.filters});
                 
-                KGqueryWidget.execPathQuery(null,function(err,result){
+                KGquery.currentSource=TimeLine.source;
+
+                KGquery.execPathQuery(null,function(err,result){
                     // Treat Data and Dipslay TimeLine
 
 
