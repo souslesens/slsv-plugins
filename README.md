@@ -5,10 +5,13 @@ SousLeSensVocables-plugin
 All plugins of SousLeSens 
 
 
-Plugin Example do nothing but if you want to create a new plugin you can use it as example to the way to do it.
-
-
-After that, you need to go to mainConfig.json and add the name of your folder plugin (PluginExample in this case) to the list tools_available.
+Plugin Example isn't a functional plugin but if you want to create a new plugin, you can copy it, it has the right structure to create one. 
+Then rename PluginExample by your plugin name.
+Go to mainConfig.json and add the name of your plugin to tools_available variable.
+Restart your server and your navigator.
+Your plugin will be available on SLS tools selection. 
+Go to file plugins/PluginExample/public/js/main.js, the function onLoaded is executed when you click on it on SLS.
+Edit it as you want.
 
 
 //GitHub

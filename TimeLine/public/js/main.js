@@ -1,5 +1,7 @@
 
+import ResponsiveUI from "../../../../vocables/responsive/responsiveUI.js";
 import VisjsGraphClass from "../../../vocables/modules/graph/VisjsGraphClass.js";
+import TimeLine_myQueries from "./timeLine_myQueries.js";
 
 
 var TimeLine = (function () {
@@ -8,12 +10,36 @@ var TimeLine = (function () {
     self.datesTypes=null;
     self.inferredModel=null;
     self.timeline=null;
-    self.filters={}
+    self.filters={};
+    self.skipSuccesivePannelLaunchForMyQuery=null;
+    self.BOlinkedToIntervals={};
     self.onLoaded = function () {
         
     
-        self.timelineSourceBrowser();
+        //self.timelineSourceBrowser();
+        
+        $("#mainDialogDiv").dialog("close");
+        TimeLine.source = ResponsiveUI.source;
+        Lineage_sources.activeSource=TimeLine.source;
+        OntologyModels.registerSourcesModel(TimeLine.source, function (err, result) {
+            if (err) {
+                return callback(err);
+            }
+        });
+        Lineage_sources.registerSourceImports(TimeLine.source, function (err) {
+            if (err) {
+                return callback(err);
+            }
+            $('#lateralPanelDiv').load("/plugins/TimeLine/html/leftPannelTimeLine.html",function () { 
+                TimeLine.getDatesTypes();
+                $("#TimeLine_leftPanelTabs").tabs()
+                SavedQueriesComponent.showDialog("STORED_TIMELINE_QUERIES","TimeLine_myQueriesDiv",TimeLine.source, null, TimeLine_myQueries.save, TimeLine_myQueries.load,);
 
+        });
+        });
+        $('#graphDiv').load("/plugins/TimeLine/html/TimeLineDiv.html",function () { 
+            
+        });
       
         
     };
@@ -26,13 +52,26 @@ var TimeLine = (function () {
             $("#mainDialogDiv").dialog("close");
             TimeLine.source = SourceSelectorWidget.getSelectedSource()[0];
             Lineage_sources.activeSource=TimeLine.source;
+            OntologyModels.registerSourcesModel(TimeLine.source, function (err, result) {
+                if (err) {
+                    return callback(err);
+                }
+            });
+            Lineage_sources.registerSourceImports(TimeLine.source, function (err) {
+                if (err) {
+                    return callback(err);
+                }
+                $('#toolPanelDiv').load("/plugins/TimeLine/html/leftPannelTimeLine.html",function () { 
+                    TimeLine.getDatesTypes();
+                    $("#TimeLine_leftPanelTabs").tabs()
+                    SavedQueriesComponent.showDialog("STORED_TIMELINE_QUERIES","TimeLine_myQueriesDiv",TimeLine.source, null, TimeLine_myQueries.save, TimeLine_myQueries.load,);
+    
+            });
+            });
             $('#graphDiv').load("/plugins/TimeLine/html/TimeLineDiv.html",function () { 
                 
             });
             
-                $('#toolPanelDiv').load("/plugins/TimeLine/html/leftPannelTimeLine.html",function () { 
-                    TimeLine.getDatesTypes();
-                });
             
             
         };
@@ -118,6 +157,7 @@ var TimeLine = (function () {
         }
         var data=[];
         var listIds=[];
+        
         result.results.bindings.forEach(function (item, index) {
             
             data.push({ label: item.label.value, id: item.type.value,linkedBO: [] });
@@ -125,6 +165,7 @@ var TimeLine = (function () {
         });
         self.datesTypes=data;
 
+       
         var result=[];
         async.series(
             [
@@ -158,8 +199,54 @@ var TimeLine = (function () {
 
                         });
                         linkedObjects=linkedObjects.filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i);
-                        common.fillSelectOptions('BO',linkedObjects,true,"label","id");
-                        callbackSeries();
+                        Sparql_OWL.sparql_url=url;
+                        Sparql_OWL.getNodesAncestors(TimeLine.source, linkedObjects.map(item=>item.id), null, function (err, ancestors) {
+                            var Interval_classes=[];
+                            // Get Periods
+                            if(ancestors.rawResult.length>0){
+                                Object.keys(ancestors.hierarchies).forEach(key => {
+                                    ancestors.hierarchies[key].forEach(item=>{
+                                        if(item.superClass.value=='http://rds.posccaesar.org/ontology/lis14/rdl/Interval'){
+                                            Interval_classes.push(key);
+                                        }
+                                    });
+                                }); 
+                                var BOFromInterval=[];
+                                var datesTypesIds=self.datesTypes.map(item=>item.id);
+                                Interval_classes.forEach(interval=> {
+                                    TimeLine.inferredModel.edges.forEach(item=>{
+                                        if(item.from==interval && !datesTypesIds.includes(item.to)){
+                                            BOFromInterval.push({id:item.to,label:TimeLine.inferredModel.nodes.filter(node=>node.id==item.to)[0].label});
+                                            self.BOlinkedToIntervals[interval]=item.to;
+                                        }
+                                        if(item.to == interval && !datesTypesIds.includes(item.from)){
+                                            BOFromInterval.push({id:item.from,label:TimeLine.inferredModel.nodes.filter(node=>node.id==item.from)[0].label});
+                                            self.BOlinkedToIntervals[interval]=item.from;
+                                        }
+                                    });
+                                   
+                                });
+                                if(BOFromInterval.length>0){
+                                    linkedObjects=linkedObjects.concat(BOFromInterval);
+                                    linkedObjects=linkedObjects.filter((v,i,a)=>a.findIndex(v2=>(v2.id===v.id))===i);
+                                }
+
+                            }
+
+                            /*
+                            var Interval_classes_str="";
+                            Interval_classes_str=Interval_classes.reduce((accumulator, currentValue) => accumulator +">,<" +currentValue,Interval_classes_str,)+">";
+                            Interval_classes_str=Interval_classes_str.slice(2,Interval_classes_str.length);
+                            // Get by transitivity BO extracted from Periods
+                            */
+                            if(!self.ignoreBoSelectForMyQuery){
+                                common.fillSelectOptions('BO',linkedObjects,true,"label","id");
+                                
+                            }
+                           
+                            callbackSeries();
+                        });
+                        
                         
                     });
                   
@@ -173,7 +260,9 @@ var TimeLine = (function () {
                 }
                 
                
-            });
+        });
+        
+        
       
        
         
