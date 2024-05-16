@@ -31,7 +31,7 @@ var TagsCalendar = (function() {
 
                 } else {
 
-                    if (key.indexOf("label") > -1) {
+                    if (prop.type!='uri' && prop.datatype.indexOf("int")== -1 && prop.datatype.indexOf("int")== -1){
                         labels.push(key);
                         groups.push(key);
                         
