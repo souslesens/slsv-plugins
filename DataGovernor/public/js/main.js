@@ -1197,7 +1197,7 @@ var DataGovernor = (function () {
         $("#accordion").accordion("option", { active: 2 });
         */
             SearchUtil.initSourcesIndexesList(null, function (err, sources) {
-                if (err) return MainController.UI.message(err);
+                if (err) return UI.message(err);
                 /*
             sources.sort();
 

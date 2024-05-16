@@ -1,5 +1,5 @@
 
-import ResponsiveUI from "../../../../vocables/responsive/responsiveUI.js";
+//import UI from "../../../vocables/modules/shared/UI.js";
 import VisjsGraphClass from "../../../vocables/modules/graph/VisjsGraphClass.js";
 import TimeLine_myQueries from "./timeLine_myQueries.js";
 
@@ -19,7 +19,7 @@ var TimeLine = (function () {
         //self.timelineSourceBrowser();
         
         $("#mainDialogDiv").dialog("close");
-        TimeLine.source = ResponsiveUI.source;
+        TimeLine.source = UI.source;
         Lineage_sources.activeSource=TimeLine.source;
         OntologyModels.registerSourcesModel(TimeLine.source, function (err, result) {
             if (err) {
@@ -255,7 +255,7 @@ var TimeLine = (function () {
             ],
             function (err) {
                 if (err) {
-                    MainController.UI.message(err);
+                    UI.message(err);
                    
                 }
                 
@@ -564,7 +564,7 @@ var TimeLine = (function () {
             ],
             function (err) {
                 if (err) {
-                    MainController.UI.message(err);
+                    UI.message(err);
                 
                 }   
                 //QUERY KG
