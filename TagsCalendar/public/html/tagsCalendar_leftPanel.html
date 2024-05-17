@@ -43,6 +43,16 @@
             <input type="checkbox" id="tagsCalendar_expandGroups"> expandAll
             <button class="slsv-button-1" onclick="TagsCalendar.onDrawButtonClick()">Draw</button>
         </div>
+        <div id="tagsCalendar_focusDiv" style="display: none;">
+            <!--Focus on group :  <select id="tagsCalendar_focusOnGroup" class="select-bar-theme1" style="display: none;"></select>-->
+            </br>
+            Focus on Date : <button class="slsv-button-1" onclick="DateWidget.showDateRangePicker('widgetGenericDialogDiv', null, null, function (minDate, maxDate) {
+                TagsCalendar.focusOnDate(minDate,maxDate);
+                //   self.functions.setSparqlQueryFilterFn()
+                
+            });">Date Picker</button>
+            
+        </div> 
     </div>
     <div id="tagsCalendarInfosPanelTab">
         <div id="tagsCalendarInfosDiv" style="width: 300px; height: 500px"></div>
@@ -50,7 +60,7 @@
 
 
     <div id="tagsCalendarSoredQueries">
-
+    
     </div>
 </div>
 

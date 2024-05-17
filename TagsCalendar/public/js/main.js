@@ -1,6 +1,8 @@
 var TagsCalendar = (function() {
         var self = {};
-
+        /*$('.vis-inner').filter(function() {
+        return $(this).text()=='Structure';
+      }).offset().top()*/
 
         self.onLoaded = function() {
 
@@ -31,9 +33,17 @@ var TagsCalendar = (function() {
 
                 } else {
 
-                    if (prop.type!='uri' && prop.datatype.indexOf("int")== -1 && prop.datatype.indexOf("int")== -1){
-                        labels.push(key);
-                        groups.push(key);
+                    if (prop.type!='uri'){
+                        if(prop.datatype){
+                            if( prop.datatype.indexOf("int")== -1 && prop.datatype.indexOf("float")== -1){
+                                labels.push(key);
+                                groups.push(key);
+                            }
+                        }else{
+                            labels.push(key);
+                            groups.push(key);
+                        }
+                      
                         
 
                     } else {
@@ -129,7 +139,8 @@ var TagsCalendar = (function() {
             } else {
                 self.drawTimeLine(data);
             }
-
+            $('#tagsCalendar_focusDiv').show();
+            common.fillSelectOptions("tagsCalendar_focusOnGroup", groupsData.map(object=>object.id), true);
         };
 
 
@@ -269,7 +280,9 @@ var TagsCalendar = (function() {
             });
 
         };
-
+        self.focusOnDate=function(minDate,maxDate){
+            self.timeline.setWindow(minDate,maxDate);
+        };
         self.onLabelSelect = function() {
             var labelVarName = $("#tagsCalendar_labelSelect").val();
             $("#tagsCalendar_idSelect").val(labelVarName.replace("_label", ""));
