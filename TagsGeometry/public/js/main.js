@@ -1,12 +1,22 @@
-var TagsGeometry = (function () {
+import SavedQueriesWidget from "../../../../vocables/modules/uiWidgets/savedQueriesWidget.js";
+import KGquery from "../../../../vocables/modules/tools/KGquery/KGquery.js";
+import KGquery_myQueries from "../../../../vocables/modules/tools/KGquery/KGquery_myQueries.js";
+import Sparql_proxy from "../../../../vocables/modules/sparqlProxies/sparql_proxy.js";
+
+var TagsGeometry = (function() {
     var self = {};
 
-    self.onLoaded = function () {
-        $("#lateralPanelDiv").load("/plugins/TagsGeometry/html/tagsGeometry_leftPanel.html", function () {
-            $("#graphDiv").load("/plugins/TagsGeometry/html/tagsGeometry_rightPanel.html", function (x, y) {
-                
+    self.onLoaded = function() {
+
+
+        $("#lateralPanelDiv").load("/plugins/TagsGeometry/html/tagsGeometry_leftPanel.html", function() {
+            $("#graphDiv").load("/plugins/TagsGeometry/html/tagsGeometry_rightPanel.html", function(x, y) {
+
                 self.initCanvas("canvas");
                 self.initControls();
+
+                SavedQueriesWidget.showDialog("STORED_KGQUERY_QUERIES", "tagsGeometrySoredQueries", "LIFEX-DALIA_1", null, null, TagsGeometry.execSavedKGquery);
+
             });
         });
     };
@@ -14,7 +24,7 @@ var TagsGeometry = (function () {
     self.deckColors = {
         "Main Deck": "black",
         "Mezzanine Deck": "red",
-        "Upper Deck": "blue",
+        "Upper Deck": "blue"
     };
     self.disciplineColors = {
         "Control Systems and PLCs": "#8efd00",
@@ -23,80 +33,80 @@ var TagsGeometry = (function () {
         "Mechanical Rotating": "#000efd",
         "Mechanical Static equipments": "#8200fd",
         "Piping valves and vessels": "#f500fd",
-        Structure: "#c3c3c3",
+        Structure: "#c3c3c3"
     };
 
-    self.initControls = function () {
+    self.initControls = function() {
         var jstreeData = [
             {
                 id: "discipline",
                 text: "discipline",
-                parent: "#",
+                parent: "#"
             },
             {
                 id: "deck",
                 text: "deck",
-                parent: "#",
+                parent: "#"
             },
             {
                 id: "JobCard",
                 text: "JobCard",
-                parent: "#",
-            },
+                parent: "#"
+            }
         ];
         var disciplines = Object.keys(self.disciplineColors);
-        disciplines.forEach(function (discipline, index) {
+        disciplines.forEach(function(discipline, index) {
             var color = self.disciplineColors[discipline];
             jstreeData.push({
                 id: discipline,
                 text: "<span style='color:" + color + "'>" + discipline + "</span>",
-                parent: "discipline",
+                parent: "discipline"
             });
         });
         var decks = Object.keys(self.deckColors);
-        decks.forEach(function (deck, index) {
+        decks.forEach(function(deck, index) {
             jstreeData.push({
                 id: deck,
                 text: deck,
-                parent: "deck",
+                parent: "deck"
             });
         });
         var options = {
             selectTreeNodeFn: TagsGeometry.onSelectTreeNode,
             openAll: true,
-            withCheckboxes: true,
+            withCheckboxes: true
         };
         //  options.contextMenu = self.jstreeContextMenu();
 
-        self.loadAllJobCards(jstreeData, function (err) {
+        self.loadAllJobCards(jstreeData, function(err) {
             JstreeWidget.loadJsTree("tagsGeometryTreeDiv", jstreeData, options);
         });
     };
-    self.onSelectTreeNode = function (evt, obj) {
+    self.onSelectTreeNode = function(evt, obj) {
         if ((obj.node.parent = "JobCard")) {
             self.unSelectObjects();
             self.selectObject("number", obj.node.id);
         }
     };
 
-    self.loadAllJobCards = function (jstreeData, callback) {
+    self.loadAllJobCards = function(jstreeData, callback) {
         var sql = "select distinct number from V_jobcard order by number";
-        self.execSql(sql, function (err, result) {
+        self.execSql(sql, function(err, result) {
             if (err) {
                 return callback();
             }
-            result.forEach(function (item) {
+            result.rows.forEach(function(item) {
                 jstreeData.push({
                     id: item.number,
                     text: item.number,
-                    parent: "JobCard",
+                    parent: "JobCard"
                 });
             });
             return callback();
         });
     };
 
-    self.draw = function () {
+    self.draw = function(filterTags) {
         self.selectedObjects = [];
         self.canvas.clear();
         var filterDeck = "";
@@ -105,7 +115,7 @@ var TagsGeometry = (function () {
 
         var checkedOptions = $("#tagsGeometryTreeDiv").jstree(true).get_checked(true);
 
-        checkedOptions.forEach(function (item) {
+        checkedOptions.forEach(function(item) {
             if (item.parent == "deck") {
                 if (filterDeck != "") {
                     filterDeck += ",";
@@ -150,71 +160,100 @@ var TagsGeometry = (function () {
         }
 
         var sqlQuery = "select * from V_JC_tags_coords " + allFilter;
-        self.execSql(sqlQuery, function (err, data) {
+        self.execSql(sqlQuery, function(err, data) {
             if (err) {
                 return alert(err.responseText);
             }
-            data.sort(function (a, b) {
-                var aw = a.yMax - a.yMin;
-                var bw = b.yMax - b.yMin;
-                if (aw > bw) {
-                    return -1;
-                }
-                if (bw > aw) {
-                    return 1;
-                }
-                return 0;
-            });
 
-            var group = new fabric.Group();
-            data.forEach(function (item, index) {
-                var w = item.yMax - item.yMin;
-                var h = item.xMax - item.xMin;
-                item.index = index;
-
-                if (w < 1 || h < 1) {
-                    var dot = new fabric.Circle({
-                        radius: 1,
-                        fill: self.disciplineColors[item.disciplineName] || "#bbb",
-                        stroke: "black",
-                        strokeWidth: 0.2,
-                        top: item.xMax,
-                        left: item.yMin,
-                        data: item,
-                    });
-                    self.canvas.add(dot);
-                } else {
-                    const rect = new fabric.Rect({
-                        //  evented:false,
-                        top: item.xMin,
-                        left: item.yMin,
-                        width: w,
-                        height: h,
-                        //  fill: self.disciplineColors[item.disciplineName],
-                        fill: "rgba(0,0,0,0)",
-                        // stroke: self.deckColors[item.deck],
-                        stroke: self.disciplineColors[item.disciplineName] || "#555",
-                        strokeWidth: 0.2,
-                        data: item,
-                        // selectable: false
-                        // opacity: 0.9
-                    });
-                    // group.add(rect)
-                    self.canvas.add(rect);
-                }
-            });
-
+            self.currentTagsData = data.rows;
+            self.drawDataOnCanvas(data.rows, filterTags);
             // self.canvas.add(group);
         });
-        setTimeout(function () {
+        setTimeout(function() {
             var objects = self.canvas.getObjects();
-            objects.forEach(function (obj) {
+            objects.forEach(function(obj) {
                 obj.moveTo(obj.data.index);
             });
         }, 2000);
     };
 
-    self.showObjectInfos = function (object) {
+    self.drawDataOnCanvas = function(data, filterTags) {
+        self.canvas.clear();
+        self.initControls();
+        data.sort(function(a, b) {
+            var aw = a.y_max - a.y_min;
+            var bw = b.y_max - b.y_min;
+            if (aw > bw) {
+                return -1;
+            }
+            if (bw > aw) {
+                return 1;
+            }
+            return 0;
+        });
+
+        var coef = 4;
+        data.forEach(function(item, index) {
+            item.x_min *= coef;
+            item.y_min *= coef;
+            item.x_max *= coef;
+            item.y_max *= coef;
+        });
+
+
+        var group = new fabric.Group();
+
+
+        data.forEach(function(item, index) {
+            var w = item.y_max - item.y_min;
+            var h = item.x_max - item.x_min;
+            item.index = index;
+            var color = self.disciplineColors[item.disciplineName] || "#bbb";
+            var color2 = "rgba(0,0,0,0)";
+            var color3 = self.disciplineColors[item.disciplineName] || "#555";
+            if (filterTags && filterTags[item.tag]) {
+                color = "#aa1151";
+                //   color2 = "#aa1151";
+                color3 = "#aa1151";
+            }
+
+
+            if (w < 1 || h < 1) {
+                var dot = new fabric.Circle({
+                    radius: coef,
+                    fill: color,
+                    stroke: color,
+                    strokeWidth: 0.2,
+                    top: item.x_max,
+                    left: item.y_min,
+                    data: item
+                });
+                self.canvas.add(dot);
+            } else {
+                const rect = new fabric.Rect({
+                    //  evented:false,
+                    top: item.x_min,
+                    left: item.y_min,
+                    width: w,
+                    height: h,
+                    //  fill: self.disciplineColors[item.disciplineName],
+                    fill: color2,
+                    // stroke: self.deckColors[item.deck],
+                    stroke: color3,
+                    strokeWidth: 0.2,
+                    data: item
+                    // selectable: false
+                    // opacity: 0.9
+                });
+                // group.add(rect)
+                self.canvas.add(rect);
+
+            }
+        });
+        self.canvas.setZoom(2);
+    };
+
+    self.showObjectInfos = function(object) {
         var html = "";
         for (var key in object.data) {
             var buttonStr = "";
@@ -229,13 +268,14 @@ var TagsGeometry = (function () {
         $("#tagsGeometryTabs").tabs("option", "active", 1);
     };
 
-    self.execSql = function (sqlQuery, callback) {
-        var dbName = "lifex_dalia_db";
+    self.execSql = function(sqlQuery, callback) {
+        var dbName = "testPG1";
         var sqlType = "sql.sqlserver";
         const params = new URLSearchParams({
             type: sqlType,
-            dbName: dbName,
             sqlQuery: sqlQuery,
+            name: "01HQZT7RSVSP4B2D91GBHGH1Y4",
+            dbName:dbName
         });
 
         $.ajax({
@@ -243,26 +283,26 @@ var TagsGeometry = (function () {
             url: Config.apiUrl + "/kg/data?" + params.toString(),
             dataType: "json",
 
-            success: function (data, _textStatus, _jqXHR) {
+            success: function(data, _textStatus, _jqXHR) {
                 callback(null, data);
             },
             error(err) {
                 callback(err);
-            },
+            }
         });
     };
 
-    self.initCanvas = function (canvasDivId) {
+    self.initCanvas = function(canvasDivId) {
         const canvas = new fabric.Canvas(canvasDivId, {
             // selection :false,
             backgroundColor: "#ddd", // 'rgb(100,100,200)',
             selectionColor: "blue",
             selectionLineWidth: 1,
-            width: 1200,
-            height: 600,
+            width: $("#graphDiv").width(),
+            height: $("#graphDiv").height()
         });
         self.canvas = canvas;
-        canvas.on("mouse:wheel", function (opt) {
+        canvas.on("mouse:wheel", function(opt) {
             var delta = opt.e.deltaY;
             var zoom = canvas.getZoom();
             zoom *= 0.999 ** delta;
@@ -278,64 +318,19 @@ var TagsGeometry = (function () {
         });
 
         canvas.toggleDragMode(true);
-        canvas.on("mouse:down", function (opt) {
+        canvas.on("mouse:down", function(opt) {
             self.currentObject = canvas.getActiveObject();
             if (self.currentObject) {
                 self.showObjectInfos(self.currentObject);
             }
             return false;
         });
-        /*   canvas.on('mouse:down', function(opt) {
 
-                   var evt = opt.e;
-                   if (evt.altKey === true) {
-                       this.isDragging = true;
-                       this.selection = false;
-                       this.lastPosX = evt.clientX;
-                       this.lastPosY = evt.clientY;
-                   }
-               });
-               canvas.on('mouse:move', function(opt) {
-                   if (this.isDragging) {
-                       var e = opt.e;
-                       var vpt = this.viewportTransform;
-                       vpt[4] += e.clientX - this.lastPosX;
-                       vpt[5] += e.clientY - this.lastPosY;
-                       this.requestRenderAll();
-                       this.lastPosX = e.clientX;
-                       this.lastPosY = e.clientY;
-                   }
-               });
-               canvas.on('mouse:up', function(opt) {
-                   // on mouse up we want to recalculate new interaction
-                   // for all objects, so we call setViewportTransform
-                   this.setViewportTransform(this.viewportTransform);
-                   this.isDragging = false;
-                   this.selection = true;
-               });
-               canvas.on('mouse:wheel', function(opt) {
-                   var delta = opt.e.deltaY;
-                   var zoom = canvas.getZoom();
-                   zoom *= 0.999 ** delta;
-                   if (zoom > 20) zoom = 20;
-                   if (zoom < 0.01) zoom = 0.01;
-                   canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-                   opt.e.preventDefault();
-                   opt.e.stopPropagation();
-               })
-
-
-
-
-
-           canvas.on("object:selected", function(obj) {
-               var x = obj;
-           });*/
     };
 
     const STATE_IDLE = "idle";
     const STATE_PANNING = "panning";
-    fabric.Canvas.prototype.toggleDragMode = function (dragMode) {
+    fabric.Canvas.prototype.toggleDragMode = function(dragMode) {
         // Remember the previous X and Y coordinates for delta calculations
         let lastClientX;
         let lastClientY;
@@ -348,7 +343,7 @@ var TagsGeometry = (function () {
             // Set the cursor to 'move'
             this.defaultCursor = "move";
             // Loop over all objects and disable events / selectable. We remember its value in a temp variable stored on each object
-            this.forEachObject(function (object) {
+            this.forEachObject(function(object) {
                 object.prevEvented = object.evented;
                 object.prevSelectable = object.selectable;
                 object.evented = false;
@@ -357,7 +352,7 @@ var TagsGeometry = (function () {
             // Remove selection ability on the canvas
             this.selection = false;
             // When MouseUp fires, we set the state to idle
-            this.on("mouse:up", function (e) {
+            this.on("mouse:up", function(e) {
                 state = STATE_IDLE;
             });
             // When MouseDown fires, we set the state to panning
@@ -387,12 +382,14 @@ var TagsGeometry = (function () {
 
                     let delta = new fabric.Point(deltaX, deltaY);
                     this.relativePan(delta);
-                    if (this.trigger) this.trigger("moved");
+                    if (this.trigger) {
+                        this.trigger("moved");
+                    }
                 }
             });
         } else {
             // When we exit dragmode, we restore the previous values on all objects
-            this.forEachObject(function (object) {
+            this.forEachObject(function(object) {
                 object.evented = object.prevEvented !== undefined ? object.prevEvented : object.evented;
                 object.selectable = object.prevSelectable !== undefined ? object.prevSelectable : object.selectable;
             });
@@ -407,8 +404,8 @@ var TagsGeometry = (function () {
         }
     };
 
-    self.selectObject = function (key, value, unselect) {
-        self.canvas.getObjects().forEach(function (o) {
+    self.selectObject = function(key, value, unselect) {
+        self.canvas.getObjects().forEach(function(o) {
             if (unselect) {
                 self.canvas.setActiveObject(o);
                 o.set("stroke", "black");
@@ -427,11 +424,45 @@ var TagsGeometry = (function () {
         });
         self.canvas.renderAll();
     };
-    self.unSelectObjects = function () {
-        self.selectedObjects.forEach(function (o) {
+    self.unSelectObjects = function() {
+        self.selectedObjects.forEach(function(o) {
             o.set("stroke", "black");
             // o.set("fill", "black")
             o.set("strokeWidth", 0.1);
+        });
+
+    };
+
+
+    self.execSavedKGquery = function(err, result) {
+        if (err) {
+            return alert(err.responseText);
+        }
+
+        if (!result.sparqlQuery) {
+            return alert("no sparql query to execute");
+        }
+        var queryObject = result.sparqlQuery;
+        Sparql_proxy.querySPARQL_GET_proxy(queryObject.url, queryObject.query, "", { source: queryObject.source, caller: "getObjectRestrictions" }, function(err, result) {
+            if (err) {
+                alert(err.responseText);
+            }
+
+            var tagsMap = {};
+            result.results.bindings.forEach(function(item) {
+                for (var key in item) {
+                    if (key.indexOf("tag") > -1) {
+                        tagsMap[item[key].value] = 1;
+                    }
+
+                }
+
+            });
+            if (false && self.currentTagsData) {
+                self.drawDataOnCanvas(self.currentTagsData, tagsMap);
+            } else {
+                self.draw(tagsMap);
+            }
         });
     };
 

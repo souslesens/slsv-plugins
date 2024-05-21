@@ -126,6 +126,8 @@ var TagsCalendar = (function() {
 
                         }
                         data.push(obj);
+                    }else{
+                        var x=3
                     }
                 }
             });
@@ -140,7 +142,7 @@ var TagsCalendar = (function() {
                 self.drawTimeLine(data);
             }
             $('#tagsCalendar_focusDiv').show();
-            common.fillSelectOptions("tagsCalendar_focusOnGroup", groupsData.map(object=>object.id), true);
+           // common.fillSelectOptions("tagsCalendar_focusOnGroup", groupsData.map(object=>object.id), true);
         };
 
 
@@ -227,15 +229,19 @@ var TagsCalendar = (function() {
                 editable: false,
                 height: "750px",
                 maxHeight: "750px",
-                //   margin: { item: { vertical: 1 } },
+                margin: { item: { vertical: 1 } },
                 verticalScroll: true,
-                horizontalScroll: true
+              //  horizontalScroll: true
                 //  preferZoom:true
             };
             if (self.timeline != null) {
-                self.timeline.destroy();
+                try {
+                    self.timeline.destroy();
+                }
+                catch(e){
+                    console.log(e)
+                }
             }
-            self.timeline;
             if (groups) {
                 self.timeline = new vis.Timeline(container, items, groups, options);
             } else {
