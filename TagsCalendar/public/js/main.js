@@ -33,18 +33,17 @@ var TagsCalendar = (function() {
 
                 } else {
 
-                    if (prop.type!='uri'){
-                        if(prop.datatype){
-                            if( prop.datatype.indexOf("int")== -1 && prop.datatype.indexOf("float")== -1){
+                    if (prop.type != "uri") {
+                        if (prop.datatype) {
+                            if (prop.datatype.indexOf("int") == -1 && prop.datatype.indexOf("float") == -1) {
                                 labels.push(key);
                                 groups.push(key);
                             }
-                        }else{
+                        } else {
                             labels.push(key);
                             groups.push(key);
                         }
-                      
-                        
+
 
                     } else {
                         ids.push(key);
@@ -69,7 +68,7 @@ var TagsCalendar = (function() {
             var labelVarName = $("#tagsCalendar_labelSelect").val();
             var idVarName = $("#tagsCalendar_idSelect").val();
             var groupByVarName = $("#tagsCalendar_groupBySelect").val();
-            var expandAll = $("#tagsCalendar_expandGroups").prop("checked");
+            var currentClassName = $("#tagsCalendar_classNameSelect").val();
 
 
             if (!startDateVarName) {
@@ -101,18 +100,27 @@ var TagsCalendar = (function() {
                     existingIds[id] = 1;
                     if (id && label && item[startDateVarName]) {
 
-
+                        var startDate = item[startDateVarName].value;
+                        if(true || ! startDate instanceof Date) {
+                            startDate = startDate.substring(0, 10).replace(/-/g, ".");
+                            try {
+                                startDate = new Date(startDate);
+                            }catch(e){
+                                return;
+                            }
+                        }
                         var obj = {
                             id: id,
                             content: label,
-                            start: item[startDateVarName].value
+                            start: startDate,
+                            className: currentClassName
 
                         };
                         if (endDateVarName && item[endDateVarName]) {
                             obj.end = item[endDateVarName].value;
                         }
                         if (groupByVarName && item[groupByVarName]) {
-                            var groupId=item[groupByVarName].value
+                            var groupId = item[groupByVarName].value;
                             var p = groupId.lastIndexOf("/");
                             if (p > -1) {
                                 groupId = groupId.substring(0, p);
@@ -126,8 +134,8 @@ var TagsCalendar = (function() {
 
                         }
                         data.push(obj);
-                    }else{
-                        var x=3
+                    } else {
+                        var x = 3;
                     }
                 }
             });
@@ -141,8 +149,8 @@ var TagsCalendar = (function() {
             } else {
                 self.drawTimeLine(data);
             }
-            $('#tagsCalendar_focusDiv').show();
-           // common.fillSelectOptions("tagsCalendar_focusOnGroup", groupsData.map(object=>object.id), true);
+           $("#tagsCalendar_focusDiv").show();
+            // common.fillSelectOptions("tagsCalendar_focusOnGroup", groupsData.map(object=>object.id), true);
         };
 
 
@@ -230,16 +238,15 @@ var TagsCalendar = (function() {
                 height: "750px",
                 maxHeight: "750px",
                 margin: { item: { vertical: 1 } },
-                verticalScroll: true,
-              //  horizontalScroll: true
+                verticalScroll: true
+                //  horizontalScroll: true
                 //  preferZoom:true
             };
             if (self.timeline != null) {
                 try {
                     self.timeline.destroy();
-                }
-                catch(e){
-                    console.log(e)
+                } catch (e) {
+                    console.log(e);
                 }
             }
             if (groups) {
@@ -251,31 +258,30 @@ var TagsCalendar = (function() {
 
             self.timeline.on("changed", function() {
             });
-            self.timeline.on('itemover',function(properties){
-                if(properties.item){
-                    
-                    var data=self.timeline.itemsData.get(properties.item);
-                    if(data.content){
-                        var html = "<div>Label : " + data.content+ "</div>";
-                    
-                    
-                        if(data.start){
-                            html+="<div>Start Date : " + data.start.toISOString().split('T')[0] + "</div>";
+            self.timeline.on("itemover", function(properties) {
+                if (properties.item) {
+
+                    var data = self.timeline.itemsData.get(properties.item);
+                    if (data.content) {
+                        var html = "<div>Label : " + data.content + "</div>";
+
+
+                        if (data.start) {
+                            html += "<div>Start Date : " + data.start.toISOString().split("T")[0] + "</div>";
                         }
-                        if(data.end){
-                            html+="<div>End Date : " + data.end.toISOString().split('T')[0]  + "</div>";
+                        if (data.end) {
+                            html += "<div>End Date : " + data.end.toISOString().split("T")[0] + "</div>";
                         }
                         PopupMenuWidget.initAndShow(html, "popupMenuWidgetDiv");
                     }
                 }
-                
-                
-                
-            });
-            self.timeline.on('itemout',function(properties){
 
-                    PopupMenuWidget.hidePopup( "popupMenuWidgetDiv");
-                
+
+            });
+            self.timeline.on("itemout", function(properties) {
+
+                PopupMenuWidget.hidePopup("popupMenuWidgetDiv");
+
             });
 
             self.timeline.on("click", function(properties) {
@@ -286,15 +292,43 @@ var TagsCalendar = (function() {
             });
 
         };
-        self.focusOnDate=function(minDate,maxDate){
-            self.timeline.setWindow(minDate,maxDate);
+        self.focusOnDate = function(minDate, maxDate) {
+            self.timeline.setWindow(minDate, maxDate);
         };
         self.onLabelSelect = function() {
             var labelVarName = $("#tagsCalendar_labelSelect").val();
             $("#tagsCalendar_idSelect").val(labelVarName.replace("_label", ""));
-            $("#tagsCalendar_groupBySelect").val(labelVarName);
+            //   $("#tagsCalendar_groupBySelect").val(labelVarName);
+
+        };
+
+        self.convertISOStringDateForTriple=function(isoStringdate){
+            // isoString 2022-12-31T230000.000Z
+            //  internal virtuoso date YYYY.MM.DD hh:mm.ss
+            var regex=/(\d{4})-(\d{2})-(\d{2})T(\d{2})(\d{2})(\d{2})/
+            var array=isoStringdate.match(regex)
+            if(!array)
+                return null;
+            var str=array[1]+"."+array[2]+"."+array[3]
+
+            if(array.length>4){
+                str+=" "+array[4]
+            }
+            if(array.length>5){
+                str+=":"+array[5]
+            }
+            if(array.length>6){
+                str+=":"+array[6]
+            }
+            return str
+
+
+
 
         }
+
+
+
 
         return self;
 

@@ -6,6 +6,13 @@
         font-size: 12px;
 
     }
+    .calendar-period-default{
+
+    }
+    .calendar-period-slim{
+        height:2px;
+        font-size: 8px;
+    }
 </style>
 
 
@@ -43,9 +50,17 @@
             <input type="checkbox" id="tagsCalendar_expandGroups"> expandAll
             <button class="slsv-button-1" onclick="TagsCalendar.onDrawButtonClick()">Draw</button>
         </div>
+        <div>
+           period display <select id="tagsCalendar_classNameSelect" class="select-bar-theme1">
+                <option value="calendar-period-default">default</option>
+                <option value="calendar-period-slim">slim</option>
+            </select>
+        </div>
         <div id="tagsCalendar_focusDiv" style="display: none;">
             <!--Focus on group :  <select id="tagsCalendar_focusOnGroup" class="select-bar-theme1" style="display: none;"></select>-->
             </br>
+
+
             Focus on Date : <button class="slsv-button-1" onclick="DateWidget.showDateRangePicker('widgetGenericDialogDiv', null, null, function (minDate, maxDate) {
                 TagsCalendar.focusOnDate(minDate,maxDate);
                 //   self.functions.setSparqlQueryFilterFn()
