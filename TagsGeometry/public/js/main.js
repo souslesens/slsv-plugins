@@ -6,6 +6,10 @@ import Sparql_proxy from "../../../../vocables/modules/sparqlProxies/sparql_prox
 var TagsGeometry = (function() {
     var self = {};
 
+    self.setConfig = function (config) {
+        self.config = config
+    }
+
     self.onLoaded = function() {
 
 
@@ -274,7 +278,7 @@ var TagsGeometry = (function() {
         const params = new URLSearchParams({
             type: sqlType,
             sqlQuery: sqlQuery,
-            name: "01HQZT7RSVSP4B2D91GBHGH1Y4",
+            name: self.config.databaseId,
             dbName:dbName
         });
 
