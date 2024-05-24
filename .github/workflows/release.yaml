@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build assets
+        run: |
+          mkdir assets
+          for p in $(find . -maxdepth 1 -type d -name "[A-Z]*" | sed 's/\.\///g'); do zip -r assets/${p}-${{ vars.GITHUB_REF }}.zip ${p};done
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          path: assets/*.zip
