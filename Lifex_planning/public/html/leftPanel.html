@@ -1,0 +1,68 @@
+
+<style>
+    .vis-item {
+        border-color: orange;
+        background-color: #ececd2;
+        font-size: 8px;
+        width: 2px;
+       // height: 2px;
+
+    }
+    .calendar-period-default{
+
+    }
+    .calendar-period-slim{
+        height:2px;
+        font-size: 8px;
+    }
+    .chartTitle_filterType{
+        color: blue;
+    }
+    .chartTitle_filterItem{
+        color: #778dd7;
+    }
+</style>
+
+
+
+<div id="tagsCalendarTabs">
+    <ul>
+        <li class="nodeInfosWidget_tabDiv"><a href="#tagsCalendarControlPanelTab">Filter</a></li>
+      
+    </ul>
+
+
+
+
+    <div id="tagsCalendarControlPanelTab" class='w3-container lineage-tab slsv-bg-pale' style="display: flex; flex-direction: column">
+        <div id="tagsCalendarMessageDiv"></div>
+        <div id="Lifex_planning_jstreeFilterDiv">
+
+        </div>
+<div>
+    <select id="Lifex_planning_chartName">
+        <option>Daily Hours</option>
+    </select> <button onclick="FilterTree.drawChart()">Draw</button>
+</div>
+        <select id="tagsCalendarItemsSelect" onclick="Lifex_planning.showNodeInfos($(this).val())"  size="20">
+
+        </select>
+
+
+
+    </div>
+
+    <div id="tagsCalendarInfosPanelTab">
+
+        <div id="tagsCalendarInfosDiv" style="width: 300px; height: 500px"></div>
+    </div>
+
+
+
+</div>
+
+<script>
+    $("#tagsCalendarTabs").tabs({});
+
+</script>
+<!--<script type="module" src="plugins/TagsCalendar/js/tagsCalendar_storedQueries.js"></script>-->
