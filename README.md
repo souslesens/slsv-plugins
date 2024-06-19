@@ -20,7 +20,7 @@ Then, for each plugin folder,  the content of the public folder is dynamically a
 
 ## GitHub
 
-To sychronize your SousLeSensVocables project pulgin folder to the plugins repository, you need to do the following commands at the project root :
+To sychronize your SousLeSensVocables project plugin folder to the plugins repository, you need to do the following commands at the project root :
 ````
     cd plugins
     git init
