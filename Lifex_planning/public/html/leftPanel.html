@@ -8,6 +8,14 @@
        // height: 2px;
 
     }
+
+    .vis-item-JC{
+        border-color: #117de8;
+        background-color: #778dd7;
+        font-size: 8px;
+        width: 2px;
+
+    }
     .calendar-period-default{
 
     }
@@ -35,7 +43,7 @@
 
 
     <div id="tagsCalendarControlPanelTab" class='w3-container lineage-tab slsv-bg-pale' style="display: flex; flex-direction: column">
-        <div id="tagsCalendarMessageDiv"></div>
+
         <div id="Lifex_planning_jstreeFilterDiv">
 
         </div>
@@ -44,10 +52,12 @@
         <option>Daily Hours</option>
     </select> <button onclick="FilterTree.drawChart()">Draw</button>
 </div>
-        <select id="tagsCalendarItemsSelect" onclick="Lifex_planning.showNodeInfos($(this).val())"  size="20">
 
-        </select>
+        <div>
 
+         <!--   <input  id="Lifex_planning_SearchInput"/>-->
+        <select id="tagsCalendarItemsSelect"  size="20"> </select>
+        </div>
 
 
     </div>

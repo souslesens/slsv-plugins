@@ -1,7 +1,9 @@
 import TimeLineEventManager from "./timeLineEventManager.js";
+import TagGeometry from "./tagGeometry.js";
 
 import FilterTree from "./filterTree.js";
 import CustomNodeInfos   from "./customNodeInfos.js";
+
 
 var Lifex_planning = (function() {
         var self = {};
@@ -18,9 +20,34 @@ var Lifex_planning = (function() {
                 //   SavedQueriesWidget.list("STORED_KGQUERY_QUERIES", self.currentSource, null,"tagsCalendarSoredQueries" );
                 FilterTree.loadTree(self.currentSource);
 
+               $("#tagsCalendarItemsSelect") .on("click",function(evt){
+                   var selection=$(this).val()
+                   if(evt.ctrlKey)
+                   onclick=CustomNodeInfos.showNodeInfos(selection)
+                   else{
+                       TagsGeometry.highlightTags([selection]);
+                   }
+               })
+
 
 
                 $("#graphDiv").load("/plugins/Lifex_planning/html/rightPanel.html", function(x, y) {
+                    TagsGeometry.drawAllTags(function(err,decksMap){
+
+                        var html=""
+                        for (var deck in decksMap){
+                            html+="&nbsp;<span style='font-weight:bold;background-color:"+decksMap[deck]+"'>"+deck+"</span>&nbsp;"
+                        }
+                        $("#tagsGeometryDecksDiv").html(html)
+
+                    })
+                    $("#LifexPlanningTabs").tabs({ activate: function (e, ui) {
+                            var divId = ui.newPanel.selector;
+                            if (divId == "#LifexPlanningTab_geometry") {
+
+                            }
+                        }
+                    })
                     //  self.drawTimeLine();
 
                 });
@@ -264,9 +291,12 @@ var Lifex_planning = (function() {
         };
 
 
-        self.drawTimeLine = function(items, groups) {
+        self.drawTimeLine = function(items, groups,divId) {
+            self.currentdataItems=items
+      if(!divId)
+          divId="graphDiv"
 
-            var container = document.getElementById("graphDiv");
+        var  container= document.getElementById(divId);
             if (!items) {
                 items = self.testData;
             }
@@ -332,8 +362,14 @@ var Lifex_planning = (function() {
 
             self.timeline.on("click", function(properties) {
 
-                if (properties && properties.item) {
-                    self.showNodeInfos(properties.item);
+
+
+                if ( properties && properties.item) {
+
+                    DataManager.addOtherActivitiesToTimeLine(properties.item)
+                    $("#tagsCalendarItemsSelect").val(properties.item)
+                    if(properties/event.ctrlKey)
+                   self.showNodeInfos(properties.item);
                 }
 
             });
@@ -381,6 +417,9 @@ var Lifex_planning = (function() {
 
             CustomNodeInfos.showNodeInfos( uri);
         };
+
+
+
 
 
         return self;

@@ -26,7 +26,7 @@ var CustomNodeInfos = (function() {
     self.TasksTabDiv=function(){
         //Tasks
          
-        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:800px;'>" + "<table class='infosTable'>";
+        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:"+3*self.widthWBSTable+"px;'>" + "<table class='infosTable'>";
         
         str+="<thead><tr class='infos_table'>";
         str +=
@@ -49,6 +49,7 @@ var CustomNodeInfos = (function() {
         `;
         Sparql_proxy.querySPARQL_GET_proxy(self.url, query, "", { source: Lifex_planning.currentSource }, function (err, result) {
             var tasksStr='';
+            result.results.bindings=result.results.bindings.sort((a,b) => a.Task_sequenceNumber.value - b.Task_sequenceNumber.value)
             result.results.bindings.forEach((row,index)=>{
                 var style='';
                 str+="<tr class='infos_table'>";
@@ -80,7 +81,7 @@ var CustomNodeInfos = (function() {
                //Tags
                 function(callbackSeries) {
                     
-                    strTagTable= "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:900px;'> <table class='infosTable' style='margin-top:20px;'>";
+                    strTagTable= "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:"+3*self.widthWBSTable+"px;'> <table class='infosTable' style='margin-top:20px;'>";
                     strTagTable+="<thead><tr class='infos_table'>";
                     strTagTable +=
                     "<th class='detailsCellName'>" +
@@ -131,6 +132,7 @@ var CustomNodeInfos = (function() {
                     ?tag  rdf:type <http://data.total/resource/tsf/dalia-lifex1/tag>.
                     OPTIONAL  {?tag <http://www.w3.org/2000/01/rdf-schema#label> ?tag_label.}
                      OPTIONAL  {?tag <http://purl.org/dc/terms/title> ?tag_title.}
+                      OPTIONAL  {?tag <http://data.total/resource/tsf/dalia-lifex1/tagHyperlink> ?tag_tagHyperlink.}
                     }  
                     `;
                 Sparql_proxy.querySPARQL_GET_proxy(self.url, query, "", { source: Lifex_planning.currentSource }, function (err, result) {
@@ -139,6 +141,10 @@ var CustomNodeInfos = (function() {
                       
                         self.nodeInfosRelatedTags[row.tag.value]={'label':row.tag_label.value};
                         self.nodeInfosRelatedTags[row.tag.value]['title']=row.tag_title.value;
+                        if(row.tag_tagHyperlink){
+                            self.nodeInfosRelatedTags[row.tag.value]['hyperlink']=row.tag_tagHyperlink.value;
+                        }
+                        
                     });
                    
                     callbackSeries();
@@ -154,6 +160,9 @@ var CustomNodeInfos = (function() {
                 }
                 var tagsUri=Object.keys(CustomNodeInfos.nodeInfosRelatedTags);
                 var tagUriStr=tagsUri.map(item => `<${item}>`).join(',');
+                if(!tagUriStr){
+                    return callbackSeries();
+                }
                 var query=`PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> Select distinct *   FROM   <http://data.total/resource/tsf/dalia-lifex1/>  FROM   <http://rds.posccaesar.org/ontology/lis14/ont/core>  FROM   <http://data.total/resource/tsf/PRIMAVERA_TEST/>  where {?tag <http://rds.posccaesar.org/ontology/lis14/rdl/locatedRelativeTo> ?Package.
 
 
@@ -179,6 +188,9 @@ var CustomNodeInfos = (function() {
                 }
                 var tagsUri=Object.keys(CustomNodeInfos.nodeInfosRelatedTags);
                 var tagUriStr=tagsUri.map(item => `<${item}>`).join(',');
+                if(!tagUriStr){
+                    return callbackSeries();
+                }
                 var query=`PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> Select distinct *   FROM   <http://data.total/resource/tsf/dalia-lifex1/>  FROM   <http://rds.posccaesar.org/ontology/lis14/ont/core>  FROM   <http://data.total/resource/tsf/PRIMAVERA_TEST/>  where 
                 {?tag <http://rds.posccaesar.org/ontology/lis14/rdl/residesIn> ?FunctionalLocation.
 
@@ -209,6 +221,9 @@ var CustomNodeInfos = (function() {
                 }
                 var tagsUri=Object.keys(CustomNodeInfos.nodeInfosRelatedTags);
                 var tagUriStr=tagsUri.map(item => `<${item}>`).join(',');
+                if(!tagUriStr){
+                    return callbackSeries();
+                }
                 var query=`PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
                 Select distinct *   FROM   <http://data.total/resource/tsf/dalia-lifex1/>  FROM   <http://rds.posccaesar.org/ontology/lis14/ont/core>  FROM   <http://data.total/resource/tsf/PRIMAVERA_TEST/>  where 
                 {?tag <http://rds.posccaesar.org/ontology/lis14/rdl/locatedRelativeTo> ?EquipmentItem.
@@ -257,7 +272,12 @@ var CustomNodeInfos = (function() {
                 
                 for (let tag in self.nodeInfosRelatedTags) {
                     strTagTable+='<tr class="infos_table">'
-                    strTagTable+='<td class="detailsCellValue"><div class="content">'+self.nodeInfosRelatedTags[tag].label+'</div></td>';
+                    if(self.nodeInfosRelatedTags[tag].hyperlink){
+                        strTagTable+='<td class="detailsCellValue"><div class="content"><a target="_blank" href="'+self.nodeInfosRelatedTags[tag].hyperlink+'">'+self.nodeInfosRelatedTags[tag].label+'</a></div></td>';
+                    }else{
+                        strTagTable+='<td class="detailsCellValue"><div class="content">'+self.nodeInfosRelatedTags[tag].label+'</div></td>';
+                    }
+                    
                     strTagTable+='<td class="detailsCellValue"><div class="content">'+self.nodeInfosRelatedTags[tag].title+'</div></td>';
                     if(!isEquipement){
 
@@ -315,7 +335,7 @@ var CustomNodeInfos = (function() {
             return;
         }
         var label=uri.split('/')[uri.split('/').length-1];
-        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:800px;'>" + "<table class='infosTable'>";
+        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:"+2*self.widthWBSTable+"px;'>" + "<table class='infosTable'>";
             var sparql_url = Config.sources[Lifex_planning.currentSource].sparql_server.url;
             if ((sparql_url = "_default")) {
                 sparql_url = Config.sparql_server.url;
@@ -341,18 +361,19 @@ var CustomNodeInfos = (function() {
                     OPTIONAL  {<${uri}> <http://data.total/resource/tsf/PRIMAVERA_TEST/startDate> ?WBS_activity_startDate.}
                     OPTIONAL  {<${uri}> <http://data.total/resource/tsf/PRIMAVERA_TEST/endDate> ?WBS_activity_endDate.}
                     OPTIONAL  {<${uri}> <http://data.total/resource/tsf/PRIMAVERA_TEST/durationInHours> ?WBS_activity_durationInHours.}
+                    OPTIONAL  {<${uri}> <http://data.total/resource/tsf/PRIMAVERA_TEST/treePath> ?WBS_activity_treePath.}
                     OPTIONAL  {?JobCardExecution <http://www.w3.org/2000/01/rdf-schema#label> ?JobCardExecution_label.}
                     OPTIONAL  {?JobCardExecution <http://purl.org/dc/terms/title> ?JobCardExecution_title.}
                     OPTIONAL  {?JobCardExecution <http://data.total/resource/tsf/dalia-lifex1/scafoldingVolume> ?JobCardExecution_scafoldingVolume.}
                     OPTIONAL  {?JobCardExecution <http://data.total/resource/tsf/dalia-lifex1/scafoldingComments> ?JobCardExecution_scafoldingComments.}
                     OPTIONAL  {?JobCardExecution <http://purl.org/dc/terms/description> ?JobCardExecution_description.}
-                    }  `;
+                    OPTIONAL  {?JobCardExecution <http://data.total/resource/tsf/dalia-lifex1/maximumPOB> ?JobCardExecution_maximumPOB.}
+
+                    }`;
                     
                     Sparql_proxy.querySPARQL_GET_proxy(url, query, "", { source: Lifex_planning.currentSource }, function (err, result) {
                         //console.log(result);
                         $("[aria-selected='true']").addClass("nodesInfos-selectedTab");
-                        
-                        
                         str +=
                             "<tr><td class='NodesInfos_CardId'>Label</td><td>"+
                             
@@ -365,19 +386,67 @@ var CustomNodeInfos = (function() {
                     
                         str += "<tr><td>&nbsp;</td><td>&nbsp;</td></tr>";
                         
-                        str +=self.generateRawInfosStr('WBS Activity Start Date',result.results.bindings[0].WBS_activity_startDate.value);
-                        str +=self.generateRawInfosStr('WBS Activity End Date',result.results.bindings[0].WBS_activity_endDate.value);
-                        str +=self.generateRawInfosStr('WBS Activity Duration (hours)',result.results.bindings[0].WBS_activity_durationInHours.value);
+                        
                         str +=self.generateRawInfosStr('WBS Activity title',result.results.bindings[0].WBS_activity_title.value);
+                        str +=self.generateRawInfosStr('TreePath',result.results.bindings[0].WBS_activity_treePath.value);
                         
                         str += "</table>";
-                        
+                        str += "</br><table class='infosTable'>";
+    
+                        str+="<thead><tr class='infos_table'>";
+                        str +=
+                        "<th class='detailsCellName' style='width:20px;'>" +
+                        'Start Date'+
+                        "</th>";
+                        str +=
+                        "<th class='detailsCellName' style='width:20px;'>" +
+                        'End Date'+
+                        "</th>";
+                       
+                        str +=
+                        "<th class='detailsCellName' style='width:20px;'>" +
+                        'Average daily hours'+
+                        "</th>";
+                        str +=
+                        "<th class='detailsCellName' style='width:20px;'>" +
+                        'Duration (days)'+
+                        "</th>";
+                        str +="<th class='detailsCellName'>" +
+                        'Duration (hours)'+
+                        "</th></thead>";
+                        var endDate=new Date(common.RDFStringToISODateStr(result.results.bindings[0].WBS_activity_endDate.value))
+                        var startDate=new Date(common.RDFStringToISODateStr(result.results.bindings[0].WBS_activity_startDate.value))
+                        var durationDays=(endDate-startDate)/ (1000 * 3600 * 24);
+                        durationDays=Math.round(durationDays * 2) / 2
+                        var avgDailyHours=result.results.bindings[0].WBS_activity_durationInHours.value/durationDays;
+                        avgDailyHours=avgDailyHours.toFixed(2);
+                        var durationInHours=result.results.bindings[0].WBS_activity_durationInHours.value;
+                        durationInHours=Math.round(durationInHours * 2) / 2
+                        str += "<td class='detailsCellValue'><div class='content'>" +
+                        result.results.bindings[0].WBS_activity_startDate.value
+                        +"</div></td>";
+                        str += "<td class='detailsCellValue'><div class='content'>" +
+                        result.results.bindings[0].WBS_activity_endDate.value
+                        +"</div></td>";
+                        str += "<td class='detailsCellValue'><div class='content'>" +
+                        avgDailyHours
+                        +"</div></td>";
+                        str += "<td class='detailsCellValue'><div class='content'>" +
+                        durationDays
+                        +"</div></td>";
+                        str += "<td class='detailsCellValue'><div class='content'>" +
+                        durationInHours
+                        +"</div></td>";
+                        str+='</table>'
+
+
                         self.linked_JobCard.uri=result.results.bindings[0].JobCardExecution.value;
                         self.linked_JobCard.label=result.results.bindings[0].JobCardExecution_label.value;
                         self.linked_JobCard.title=result.results.bindings[0].JobCardExecution_title.value;
                         self.linked_JobCard.scafoldingVolume=result.results.bindings[0].JobCardExecution_scafoldingVolume!=undefined ? result.results.bindings[0].JobCardExecution_scafoldingVolume.value : '';
                         self.linked_JobCard.scafoldingComments=result.results.bindings[0].JobCardExecution_scafoldingComments!=undefined ? result.results.bindings[0].JobCardExecution_scafoldingComments.value : '';
                         self.linked_JobCard.description=result.results.bindings[0].JobCardExecution_description.value;
+                        self.linked_JobCard.maximumPOB=result.results.bindings[0].JobCardExecution_maximumPOB!=undefined ? result.results.bindings[0].JobCardExecution_maximumPOB.value : '';
                         
                         callbackSeries();
 
@@ -405,7 +474,6 @@ var CustomNodeInfos = (function() {
                         } 
                     `;
                     Sparql_proxy.querySPARQL_GET_proxy(url, query, "", { source: Lifex_planning.currentSource }, function (err, result) {
-
                         str+="<table class='infosTable' style='margin-top:20px;'><tbody><tr><td class='NodesInfos_CardId'>Job Card</td></tr>";
                         str +=self.generateRawInfosStr('Discipline',result.results.bindings[0].Discipline_label.value);
                         str+=self.generateRawInfosStr('Job Card Label',self.linked_JobCard.label);
@@ -413,6 +481,7 @@ var CustomNodeInfos = (function() {
                         str+=self.generateRawInfosStr('Job Card description',self.linked_JobCard.description);
                         str+=self.generateRawInfosStr('Job Card Scafolding Volume',self.linked_JobCard.scafoldingVolume);
                         str+=self.generateRawInfosStr('Job Card Scafolding Comments',self.linked_JobCard.scafoldingComments);
+                        str+=self.generateRawInfosStr('Maximum POB',self.linked_JobCard.maximumPOB);
                         callbackSeries();
                     });
 
@@ -439,7 +508,7 @@ var CustomNodeInfos = (function() {
 
 
     self.DocumentTabDiv=function(uri,callback){
-        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:800px;'>" + "<table class='infosTable'>";
+        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:"+3*self.widthWBSTable+"px;'>" + "<table class='infosTable'>";
     
         str+="<thead><tr class='infos_table'>";
         str +=
@@ -471,13 +540,135 @@ var CustomNodeInfos = (function() {
                         result.results.bindings.forEach((row,index)=>{
                             var style='';
                             var docUri=row.JC_Document.value;
+                            var docLabel=docUri.split('/')[docUri.split('/').length-1];
+                            var docUrl="https://europe.newprodom.totalenergies.com/dcs-documents-details?Domain=40008&DocID="+docLabel;
                             str+="<tr class='infos_table'>";
-                            str += "<td class='detailsCellValue' style='width:20px;'>" +
-                            docUri.split('/')[docUri.split('/').length-1];
-                            +"</td>";
+                            str += "<td class='detailsCellValue' style='width:20px;'><a target='_blank' href='"+docUrl+"'>"+
+                            docLabel+"</a></td>";
                             str += "<td class='detailsCellValue'><div class='content'>" +
                             row.JC_Document_label.value
                             +"</div></td>";
+                            str+="</tr>";
+                            
+                        });
+                        //tasksStr=tasksStr.slice(0, -1);
+                       
+                       
+                        
+                        callbackSeries();
+
+
+
+                        
+
+                    });
+                },
+                
+                
+                function(callbackSeries) {
+                    callbackSeries();
+                   
+
+                }
+               
+                
+
+                
+
+            ],
+
+            function(err) {
+                str+="</tbody><table>";
+                str+="</div>";
+                $("#nodeInfosWidget_ObjectDiv").html(str);
+                if(callback){
+                    callback();
+                }
+                
+                //$("#nodeInfosWidget_InfosTabDiv").html(str);
+            }
+        );
+    }
+    self.ManningTabDiv=function(uri,callback){
+        var str = "<div class='NodesInfos_tableDiv'style='display:inline-grid;max-height:74vh;width:"+3*self.widthWBSTable+"px;'>" + "<table class='infosTable'>";
+    
+        str+="<thead><tr class='infos_table'>";
+        str +=
+        "<th class='detailsCellName' style='width:20px;'>" +
+        'Construction Discipline'+
+        "</th>";
+        str +=
+        "<th class='detailsCellName' style='width:20px;'>" +
+        'Offshore Manhour'+
+        "</th>";
+        str +=
+        "<th class='detailsCellName' style='width:20px;'>" +
+        'Offshore POB'+
+        "</th>";
+        str +="<th class='detailsCellName'>" +
+        'Onshore ManHours'+
+        "</th></thead>";
+        async.series([
+
+                //get WBS properties and related JC with properties 
+                function(callbackSeries) {
+                    
+                    var query=`
+                        PREFIX owl: <http://www.w3.org/2002/07/owl#>PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                        PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+                        Select distinct *   FROM   <http://data.total/resource/tsf/dalia-lifex1/>  FROM   <http://rds.posccaesar.org/ontology/lis14/ont/core>  FROM   <http://data.total/resource/tsf/PRIMAVERA_TEST/>  where 
+                        {<${self.linked_JobCard.uri}> ^<http://rds.posccaesar.org/ontology/lis14/rdl/activeParticipantIn> ?manning.
+
+
+                      <${self.linked_JobCard.uri}>  rdf:type <http://data.total/resource/tsf/dalia-lifex1/JobCardExecution>.   ?manning  rdf:type <http://data.total/resource/tsf/dalia-lifex1/manning>.
+
+                    
+                    OPTIONAL  {?manning <http://data.total/resource/tsf/dalia-lifex1/OffshorePOB> ?manning_OffshorePOB.}
+                    OPTIONAL  {?manning <http://data.total/resource/tsf/dalia-lifex1/OffshoreManhour> ?manning_OffshoreManhour.}
+                    OPTIONAL  {?manning <http://data.total/resource/tsf/dalia-lifex1/OnshoreManhour> ?manning_OnshoreManhour.}
+                    OPTIONAL  {?manning <http://data.total/resource/tsf/dalia-lifex1/constructionDiscipline> ?manning_constructionDiscipline.}
+                    }  
+                    `;
+                    
+                    Sparql_proxy.querySPARQL_GET_proxy(self.url, query, "", { source: Lifex_planning.currentSource }, function (err, result) {
+                        var tasksStr='';
+                        result.results.bindings.forEach((row,index)=>{
+                            var style='';
+                            
+                            str+="<tr class='infos_table'>";
+                            str += "<td class='detailsCellValue' style='width:20px;'>" +
+                            row.manning_constructionDiscipline.value;
+                            +"</td>";
+                            if(row.manning_OffshoreManhour){
+                                str += "<td class='detailsCellValue' style='width:20px;'>" +
+                                row.manning_OffshoreManhour.value;
+                                +"</td>";
+                            }else{
+                                str+="<td class='detailsCellValue' style='width:20px;'>" +
+                                '';
+                                +"</td>";
+                            }
+                            if(row.manning_OffshorePOB){
+                                str += "<td class='detailsCellValue' style='width:20px;'>" +
+                                row.manning_OffshorePOB.value;
+                                +"</td>";
+                            }
+                            else{
+                                str+="<td class='detailsCellValue' style='width:20px;'>" +
+                                '';
+                                +"</td>";
+                            }
+                            if(row.manning_OnshoreManhour){
+                                str += "<td class='detailsCellValue' style='width:20px;'>" +
+                                row.manning_OnshoreManhour.value;
+                                +"</td>";
+                            }
+                            else{
+                                str+="<td class='detailsCellValue' style='width:20px;'>" +
+                                '';
+                                +"</td>";
+                            }
+                           
                             str+="</tr>";
                             
                         });
@@ -529,6 +720,7 @@ var CustomNodeInfos = (function() {
         $("#" + dialog).dialog("option", "title", "Infos : " +label);
         $(".nodeInfosWidget_tabDiv").css("margin", "0px");
         $("#" + dialog).parent().css('z-index',15);
+        self.widthWBSTable=($(window).width()*0.9)/5;
         $("#" + dialog).load("/plugins/Lifex_planning/html/CustomNodeInfos.html", function () {
             $("#nodeInfosWidget_ObjectTabDiv").tabs({
                 //  active: options.showAxioms ? 1 : 0,
@@ -554,12 +746,12 @@ var CustomNodeInfos = (function() {
                         if ($(ui.newTab).text() == "Document") {
                             self.DocumentTabDiv();
                         }
+                        if ($(ui.newTab).text() == "Manning") {
+                            self.ManningTabDiv();
+                        }
                         
                     }, 100);
                 },
-                    
-                
-                
             });
             
             self.WBSJobCardTabDiv(uri,function(){

@@ -302,7 +302,7 @@ var FilterTree = (function() {
 
         $("#tagsCalendarItemsSelect").empty();
         DataManager.setChartTitle(title);
-        DataManager.loadQuery(options);
+        DataManager.drawGraph2Dchart(options);
 
 
     };
