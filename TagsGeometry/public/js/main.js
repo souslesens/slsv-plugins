@@ -10,6 +10,10 @@ var TagsGeometry = (function() {
         self.config = config
     }
 
+    self.getToolRelations = function () {
+        return {KGquery: "queryToTagsGeometry"}
+    }
+
     self.onLoaded = function() {
 
 
