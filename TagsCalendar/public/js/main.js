@@ -15,6 +15,10 @@ var TagsCalendar = (function() {
             });
         };
 
+        self.getToolRelations = function () {
+            return {KGquery: "queryToTagsCalendar"}
+        }
+
         self.drawSparqlResultTimeLine = function(sparqlresult) {
 
             self.sparqlresult = sparqlresult;
