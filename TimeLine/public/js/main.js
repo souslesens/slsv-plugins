@@ -11,7 +11,7 @@ var TimeLine = (function () {
     self.inferredModel=null;
     self.timeline=null;
     self.filters={};
-    self.skipSuccesivePannelLaunchForMyQuery=null;
+    self.skipSuccesivePanelLaunchForMyQuery=null;
     self.BOlinkedToIntervals={};
     self.onLoaded = function () {
         
@@ -30,7 +30,7 @@ var TimeLine = (function () {
             if (err) {
                 return callback(err);
             }
-            $('#lateralPanelDiv').load("/plugins/TimeLine/html/leftPannelTimeLine.html",function () { 
+            $('#lateralPanelDiv').load("/plugins/TimeLine/html/leftPanelTimeLine.html",function () { 
                 TimeLine.getDatesTypes();
                 $("#TimeLine_leftPanelTabs").tabs()
                 SavedQueriesComponent.showDialog("STORED_TIMELINE_QUERIES","TimeLine_myQueriesDiv",TimeLine.source, null, TimeLine_myQueries.save, TimeLine_myQueries.load,);
@@ -61,7 +61,7 @@ var TimeLine = (function () {
                 if (err) {
                     return callback(err);
                 }
-                $('#toolPanelDiv').load("/plugins/TimeLine/html/leftPannelTimeLine.html",function () { 
+                $('#toolPanelDiv').load("/plugins/TimeLine/html/leftPanelTimeLine.html",function () { 
                     TimeLine.getDatesTypes();
                     $("#TimeLine_leftPanelTabs").tabs()
                     SavedQueriesComponent.showDialog("STORED_TIMELINE_QUERIES","TimeLine_myQueriesDiv",TimeLine.source, null, TimeLine_myQueries.save, TimeLine_myQueries.load,);

@@ -1823,10 +1823,10 @@ var Idcp = (function () {
     };
     self.loadBOtree = function () {
         $("#rightPanelDiv").load("/vocables/snippets/lineage/lineageRightPanel.html #LineageContainersTab", function () {
-            var all_right_pannel_descendants = $("#rightPanelDiv").find("*");
+            var all_right_Panel_descendants = $("#rightPanelDiv").find("*");
 
-            for (let i = 0; i < all_right_pannel_descendants.length; i++) {
-                all_right_pannel_descendants[i].id += "_BO";
+            for (let i = 0; i < all_right_Panel_descendants.length; i++) {
+                all_right_Panel_descendants[i].id += "_BO";
             }
 
             $("#Lineage_containers_searchWhatInput_BO").hide();
@@ -1878,8 +1878,8 @@ var Idcp = (function () {
         $("#actionDivContolPanelDiv").remove();
         $("#actionDiv").remove();
 
-        var search_pannel = $("#toolPanelDiv").append("<div id='IDCP search pannel'>Search Datacontainers</div>");
-        var html_content = search_pannel.append("<div id='IDCP right pannel'></div>");
+        var search_Panel = $("#toolPanelDiv").append("<div id='IDCP search Panel'>Search Datacontainers</div>");
+        var html_content = search_Panel.append("<div id='IDCP right Panel'></div>");
 
         // Load DataContainer Search part
         html_content.load("/vocables/snippets/lineage/lineageRightPanel.html #LineageContainersTab", function () {

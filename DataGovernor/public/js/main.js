@@ -19,8 +19,8 @@ var DataGovernor = (function () {
     self.LegendOfProposals = null;
     self.initProposalTab = function () {
         $("#Lineage_proposalsTab").load("snippets/lineage/Proposals/lineage_proposal_tab.html", function () {
-            $("#Lineage_proposals_Tabs").append('<div class="lineage_actionDiv" id="Modifpannel" style="display: flex; flex-direction: column"></div>');
-            $("#Modifpannel").append('<button id="fullscreen" ><img src="../icons/fullscreen.png"></button>');
+            $("#Lineage_proposals_Tabs").append('<div class="lineage_actionDiv" id="ModifPanel" style="display: flex; flex-direction: column"></div>');
+            $("#ModifPanel").append('<button id="fullscreen" ><img src="../icons/fullscreen.png"></button>');
             $("#fullscreen").css({
                 border: "none",
                 cursor: "pointer",
@@ -31,7 +31,7 @@ var DataGovernor = (function () {
                 position: "relative",
                 left: "85%",
             });
-            $("#Modifpannel").append('<div id="JournalDiv"></div>');
+            $("#ModifPanel").append('<div id="JournalDiv"></div>');
             if (Lineage_sources.fromAllWhiteboardSources) {
                 alert("You need to select a single active source, desactivate with A button or click on a source in left source table");
             } else {
@@ -524,7 +524,7 @@ var DataGovernor = (function () {
         });
     (self.decorateNodes = function (visjsNodes) {
         if (!Config.topLevelOntologies[Config.currentTopLevelOntology]) {
-            return $("#lineage_legendWrapper").css("display", "none");
+            return $("#lineage_legendWrapperSection").css("display", "none");
         }
 
         var nonTopLevelOntologynodeIds = [];
@@ -793,9 +793,9 @@ var DataGovernor = (function () {
             return complete_legends_drop_duplicate_id;
         }),
         (self.OkbuttonSelectSources = function () {
-            var Pannel_of_request = `
+            var Panel_of_request = `
     
-        <div id="Datagovernor_Pannel_of_request">
+        <div id="Datagovernor_Panel_of_request">
             <ul>
                 <li><a id="Inserts"  href="#Request_tab_Insert" >Inserts to treat</a></li>
                 <li><a id="Deletes" href="#Request_tab_Delete" >Deletes to treat</a></li>
@@ -807,9 +807,9 @@ var DataGovernor = (function () {
             
         </div>
         `;
-            if (!$("#Datagovernor_Pannel_of_request")[0]) {
-                $("#graphDiv").prepend(Pannel_of_request);
-                $("#Datagovernor_Pannel_of_request").tabs({});
+            if (!$("#Datagovernor_Panel_of_request")[0]) {
+                $("#graphDiv").prepend(Panel_of_request);
+                $("#Datagovernor_Panel_of_request").tabs({});
                 $("#Inserts").bind("click", function () {
                     self.insertRequestTab();
                 });

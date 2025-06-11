@@ -9,7 +9,7 @@ var TimeLine_myQueries = (function() {
 
   self.save = function(callback) {
    var params={}
-    $("#controlAxisPannel select").each(function(item){
+    $("#controlAxisPanel select").each(function(item){
       params[this.id]={id:$(this).val(),label:$("#"+this.id+" option:selected").text()};
     });
 
@@ -62,7 +62,7 @@ var TimeLine_myQueries = (function() {
       $('#'+item).text(result[item].label);
       */
     });
-    TimeLine.skipSuccesivePannelLaunchForMyQuery=true;
+    TimeLine.skipSuccesivePanelLaunchForMyQuery=true;
   };
 
 
